@@ -17,16 +17,25 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.database
+import edu.ap.mobile_development_project.screens.LoginScreen
+import edu.ap.mobile_development_project.screens.OverviewScreen
 import edu.ap.mobile_development_project.ui.theme.Mobile_development_projectTheme
 
 class MainActivity : ComponentActivity() {
     private lateinit var auth: FirebaseAuth
+    private lateinit var database: DatabaseReference
+
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Initialize Firebase Auth
         auth = Firebase.auth
+        // Initialize Firebase Database
+        database = Firebase.database.reference
+
 
         enableEdgeToEdge()
         setContent {
@@ -49,14 +58,16 @@ class MainActivity : ComponentActivity() {
                                 onCreateAccount = { email, password ->
                                     createAccount(email, password)
                                 },
-                               modifier = Modifier.padding(innerPadding))
+                                modifier = Modifier.padding(innerPadding)
+                            )
                         }
 
-                        composable(Screen.Map.name) {
-                            Map(modifier = Modifier.padding(innerPadding))
+                        composable(Screen.Overview.name) {
+                            OverviewScreen(
+                                navController = navController,
+                                modifier = Modifier.padding(innerPadding)
+                            )
                         }
-
-
                     }
                 }
             }
@@ -100,7 +111,7 @@ class MainActivity : ComponentActivity() {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithEmail:success")
                     val user = auth.currentUser
-                    navController.navigate(Screen.Map.name)
+                    navController.navigate(Screen.Overview.name)
                     updateUI(user)
                 } else {
                     // If sign in fails, display a message to the user.
@@ -128,5 +139,5 @@ class MainActivity : ComponentActivity() {
 
 enum class Screen {
     Login,
-    Map
+    Overview
 }
