@@ -3,10 +3,9 @@ package edu.ap.mobile_development_project
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import edu.ap.osm.retrofit.Entry
-import edu.ap.osm.retrofit.RetrofitClient
 import kotlinx.coroutines.launch
 
-class OSMViewModel : ViewModel() {
+class MapViewModel : ViewModel() {
 
     private var _entries : List<Entry>? = null
     private var _firstAddress: Entry? = null

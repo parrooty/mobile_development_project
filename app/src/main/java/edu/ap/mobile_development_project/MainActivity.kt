@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
             Mobile_development_projectTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     LoginForm(modifier = Modifier.padding(innerPadding))
-                    Map(OSMViewModel())
+                    Map(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
