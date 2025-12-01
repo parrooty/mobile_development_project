@@ -1,6 +1,7 @@
 package edu.ap.mobile_development_project.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absoluteOffset
@@ -20,7 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -36,22 +37,27 @@ fun OverviewScreen(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    val config = LocalConfiguration.current
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column() {
+            Map(modifier = modifier.fillMaxHeight(.5f))
+            CityList(cities = cities, modifier = modifier.fillMaxHeight())
+        }
 
-    Column() {
-        Map(modifier = modifier.fillMaxHeight(.5f))
-        CityList(cities = cities, modifier = modifier.fillMaxHeight())
+        FloatingActionButton(
+            onClick = { navController.navigate(Screen.AddCity.name) },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) { Icon(Icons.Filled.Add, "Add") }
     }
-    FloatingActionButton (
-        onClick = {navController.navigate(Screen.AddCity.name)},
-        modifier = modifier.absoluteOffset( (config.screenWidthDp - 72).dp, (config.screenHeightDp - 128).dp)
-    ) { Icon(Icons.Filled.Add, "Add") }
 
 }
 
 @Composable
 fun CityList(cities: List<City>, modifier: Modifier) {
-    Column(modifier = modifier.fillMaxHeight().verticalScroll(rememberScrollState())) {
+    Column(modifier = modifier
+        .fillMaxHeight()
+        .verticalScroll(rememberScrollState())) {
         cities.forEach { city ->
             CityItem(city = city, 0, modifier = Modifier)
         }
@@ -61,9 +67,12 @@ fun CityList(cities: List<City>, modifier: Modifier) {
 @Composable
 fun CityItem(city: City, poiAmount: Int, modifier: Modifier) {
     Card(
-        modifier = Modifier.padding(10.dp).height(80.dp).fillMaxWidth()
+        modifier = Modifier
+            .padding(10.dp)
+            .height(80.dp)
+            .fillMaxWidth()
     ) {
-        Row (
+        Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxSize()
@@ -90,6 +99,7 @@ fun OverviewScreenPreview() {
         City("City2", 2.0, 2.0),
         City("City3", 3.0, 3.0),
         City("City4", 4.0, 4.0),
-        City("City5", 5.0, 5.0))
+        City("City5", 5.0, 5.0)
+    )
     CityList(cities = cities, modifier = Modifier.fillMaxHeight())
 }
