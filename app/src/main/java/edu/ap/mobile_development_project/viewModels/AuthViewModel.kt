@@ -8,12 +8,14 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class AuthViewModel : ViewModel() {
-
     private val auth: FirebaseAuth = Firebase.auth
     private val _currentUser = MutableStateFlow(auth.currentUser)
     val currentUser: StateFlow<FirebaseUser?> = _currentUser
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
 
     private val listeners = mutableListOf<(FirebaseUser?) -> Unit>()
 
@@ -35,17 +37,37 @@ class AuthViewModel : ViewModel() {
     }
 
     fun signIn(email: String, password: String) {
+        if (email.isBlank() || password.isBlank()) {
+            Log.e("Auth", "Email and password cannot be blank")
+            _error.value = "Email and password cannot be blank"
+            return
+        }
         auth.signInWithEmailAndPassword(email, password)
-            .addOnFailureListener { Log.e("Auth", "Sign in failed", it) }
+            .addOnFailureListener {
+                Log.e("Auth", "Sign in failed", it)
+                _error.value = "Sign in failed: Email or password is incorrect"
+            }
     }
 
     fun createAccount(email: String, password: String) {
+        if (email.isBlank() || password.isBlank()) {
+            Log.e("Auth", "Email and password cannot be blank")
+            _error.value = "Email and password cannot be blank"
+            return
+        }
         auth.createUserWithEmailAndPassword(email, password)
-            .addOnFailureListener { Log.e("Auth", "Create account failed", it) }
+            .addOnFailureListener {
+                Log.e("Auth", "Create account failed", it)
+                _error.value = "Sign in failed: Invalid email or password"
+            }
     }
 
     fun signOut() {
         auth.signOut()
+    }
+
+    fun clearError() {
+        _error.value = null
     }
 
     fun addAuthStateCallback(callback: (FirebaseUser?) -> Unit) {

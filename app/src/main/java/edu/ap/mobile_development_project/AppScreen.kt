@@ -105,6 +105,7 @@ fun App(
     )
 
     val currentUser by authViewModel.currentUser.collectAsState()
+    val error by authViewModel.error.collectAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -156,6 +157,8 @@ fun App(
                         onCreateAccount = { email, password ->
                             authViewModel.createAccount(email, password)
                         },
+                        error = error,
+                        clearError = { authViewModel.clearError() },
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
