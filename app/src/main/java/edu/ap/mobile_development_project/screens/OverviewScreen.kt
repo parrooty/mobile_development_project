@@ -3,26 +3,31 @@ package edu.ap.mobile_development_project.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import edu.ap.mobile_development_project.Map
+import edu.ap.mobile_development_project.Screen
 import edu.ap.mobile_development_project.domain.City
 
 @Composable
@@ -30,6 +35,7 @@ fun OverviewScreen(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
+    val config = LocalConfiguration.current
     var cities by remember { mutableStateOf(listOf<City>(
         City("City1", 1.0, 1.0),
         City("City2", 2.0, 2.0),
@@ -41,6 +47,10 @@ fun OverviewScreen(
         Map(modifier = modifier.fillMaxHeight(.5f))
         CityList(cities = cities, modifier = modifier.fillMaxHeight())
     }
+    FloatingActionButton (
+        onClick = {navController.navigate(Screen.AddCity.name)},
+        modifier = modifier.absoluteOffset( (config.screenWidthDp - 72).dp, (config.screenHeightDp - 128).dp)
+    ) { Icon(Icons.Filled.Add, "Add") }
 
 }
 

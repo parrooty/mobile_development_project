@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.google.firebase.Firebase
@@ -19,6 +20,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.database
+import edu.ap.mobile_development_project.screens.AddCityScreen
 import edu.ap.mobile_development_project.screens.LoginScreen
 import edu.ap.mobile_development_project.screens.OverviewScreen
 import edu.ap.mobile_development_project.ui.theme.Mobile_development_projectTheme
@@ -50,7 +52,6 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable(Screen.Login.name) {
-                            val context = LocalContext.current
                             LoginScreen(
                                 onSignIn = { email, password ->
                                     signIn(email, password, navController)
@@ -68,6 +69,20 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.padding(innerPadding)
                             )
                         }
+
+                        composable(Screen.AddCity.name) {
+                            AddCityScreen(
+                                navController = navController,
+                                onAddCity = { name, longitude, latitude ->
+                                    addCity(
+                                        name,
+                                        longitude,
+                                        latitude
+                                    )
+                                },
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -81,6 +96,10 @@ class MainActivity : ComponentActivity() {
         if (currentUser != null) {
             reload()
         }
+    }
+
+    private fun addCity(name: String, longitude: String, latitude: String) {
+
     }
 
     private fun createAccount(email: String, password: String) {
@@ -139,5 +158,6 @@ class MainActivity : ComponentActivity() {
 
 enum class Screen {
     Login,
-    Overview
+    Overview,
+    AddCity
 }
