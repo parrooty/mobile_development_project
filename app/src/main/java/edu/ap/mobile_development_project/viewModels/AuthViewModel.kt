@@ -26,7 +26,6 @@ class AuthViewModel : ViewModel() {
 
     init {
         // TODO: if user is already logged in previous sessions, handle accordingly
-        signOut()
         auth.addAuthStateListener(authListener)
     }
 

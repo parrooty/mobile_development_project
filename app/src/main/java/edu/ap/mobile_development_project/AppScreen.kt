@@ -1,21 +1,30 @@
 package edu.ap.mobile_development_project
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -29,6 +38,8 @@ import edu.ap.mobile_development_project.screens.LoginScreen
 import edu.ap.mobile_development_project.screens.OverviewScreen
 import edu.ap.mobile_development_project.viewModels.AuthViewModel
 import edu.ap.mobile_development_project.viewModels.CitiesViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 enum class Screen {
     Login,
@@ -42,6 +53,8 @@ fun AppBar(
     currentScreen: Screen,
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
+    drawerState: DrawerState,
+    scope: CoroutineScope,
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
@@ -57,6 +70,21 @@ fun AppBar(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "back"
                     )
+                }
+            }
+        },
+        actions = {
+            if (currentScreen != Screen.Login) {
+                IconButton(onClick = {
+                    scope.launch {
+                        if (drawerState.isClosed) {
+                            drawerState.open()
+                        } else {
+                            drawerState.close()
+                        }
+                    }
+                }) {
+                    Icon(Icons.Default.Menu, contentDescription = "Menu")
                 }
             }
         }
@@ -77,70 +105,107 @@ fun App(
     )
 
     val currentUser by authViewModel.currentUser.collectAsState()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
-        AppBar(
-            currentScreen = currentScreen,
-            canNavigateBack = navController.previousBackStackEntry != null,
-            navigateUp = { navController.navigateUp() }
-
-        )
-    } ) { innerPadding ->
-
-        // Navigate based on auth state
-        LaunchedEffect(currentUser) {
-            if (currentUser != null) {
-                navController.navigate(Screen.Overview.name) {
-                    popUpTo(Screen.Login.name) { inclusive = true }
-                }
-                citiesViewModel.loadCities()
-            } else {
+    HamburgerMenu(
+        drawerState = drawerState,
+        onSignOut = {
+            scope.launch {
+                drawerState.close()
+                authViewModel.signOut()
                 navController.navigate(Screen.Login.name) {
                     popUpTo(Screen.Overview.name) { inclusive = true }
                 }
             }
         }
-
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Login.name,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(Screen.Login.name) {
-                LoginScreen(
-                    onSignIn = { email, password ->
-                        authViewModel.signIn(email, password)
-                    },
-                    onCreateAccount = { email, password ->
-                        authViewModel.createAccount(email, password)
-                    },
-                    modifier = Modifier.padding(innerPadding)
-                )
+    ) {
+        Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
+            AppBar(
+                currentScreen = currentScreen,
+                canNavigateBack = navController.previousBackStackEntry != null,
+                navigateUp = { navController.navigateUp() },
+                drawerState = drawerState,
+                scope = scope
+            )
+        } ) { innerPadding ->
+            // Navigate based on auth state
+            LaunchedEffect(currentUser) {
+                if (currentUser != null) {
+                    navController.navigate(Screen.Overview.name) {
+                        popUpTo(Screen.Login.name) { inclusive = true }
+                    }
+                    citiesViewModel.loadCities()
+                } else {
+                    navController.navigate(Screen.Login.name) {
+                        popUpTo(Screen.Overview.name) { inclusive = true }
+                    }
+                }
             }
 
-            composable(Screen.Overview.name) {
-                val cities by citiesViewModel.cities.collectAsState()
-                OverviewScreen(
-                    cities = cities,
-                    navController = navController,
-                )
-            }
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Login.name,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable(Screen.Login.name) {
+                    LoginScreen(
+                        onSignIn = { email, password ->
+                            authViewModel.signIn(email, password)
+                        },
+                        onCreateAccount = { email, password ->
+                            authViewModel.createAccount(email, password)
+                        },
+                        modifier = Modifier.padding(innerPadding)
+                    )
+                }
 
-            composable(Screen.AddCity.name) {
-                AddCityScreen(
-                    navController = navController,
-                    onAddCity = { name, longitude, latitude ->
-                        citiesViewModel.addCity(
-                            City(
-                                name,
-                                longitude.toDouble(),
-                                latitude.toDouble()
+                composable(Screen.Overview.name) {
+                    val cities by citiesViewModel.cities.collectAsState()
+                    OverviewScreen(
+                        cities = cities,
+                        navController = navController,
+                    )
+                }
+
+                composable(Screen.AddCity.name) {
+                    AddCityScreen(
+                        navController = navController,
+                        onAddCity = { name, longitude, latitude ->
+                            citiesViewModel.addCity(
+                                City(
+                                    name,
+                                    longitude.toDouble(),
+                                    latitude.toDouble()
+                                )
                             )
-                        )
-                    },
-                    modifier = Modifier.padding(16.dp)
-                )
+                        },
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
         }
+    }
+}
+
+@Composable
+fun HamburgerMenu(
+    drawerState: DrawerState,
+    onSignOut: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    ModalNavigationDrawer(
+        drawerContent = {
+            ModalDrawerSheet {
+                NavigationDrawerItem(
+                    label = { Text(text = "Logout") },
+                    selected = false,
+                    onClick = { onSignOut() }
+                )
+            }
+        },
+        drawerState = drawerState
+    ) {
+        content()
     }
 }
