@@ -32,16 +32,17 @@ import edu.ap.mobile_development_project.domain.City
 
 @Composable
 fun OverviewScreen(
+    cities: List<City>,
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
     val config = LocalConfiguration.current
-    var cities by remember { mutableStateOf(listOf<City>(
-        City("City1", 1.0, 1.0),
-        City("City2", 2.0, 2.0),
-        City("City3", 3.0, 3.0),
-        City("City4", 4.0, 4.0),
-        City("City5", 5.0, 5.0))) }
+//    var cities by remember { mutableStateOf(listOf<City>(
+//        City("City1", 1.0, 1.0),
+//        City("City2", 2.0, 2.0),
+//        City("City3", 3.0, 3.0),
+//        City("City4", 4.0, 4.0),
+//        City("City5", 5.0, 5.0))) }
 
     Column() {
         Map(modifier = modifier.fillMaxHeight(.5f))
@@ -90,7 +91,7 @@ fun CityItem(city: City, poiAmount: Int, modifier: Modifier) {
 @Preview
 @Composable
 fun OverviewScreenPreview() {
-    var cities = listOf<City>(
+    val cities = listOf<City>(
         City("City1", 1.0, 1.0),
         City("City2", 2.0, 2.0),
         City("City3", 3.0, 3.0),

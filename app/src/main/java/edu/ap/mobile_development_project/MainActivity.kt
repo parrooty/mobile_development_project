@@ -6,9 +6,12 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -18,26 +21,37 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
+import com.google.firebase.database.ChildEventListener
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+import com.google.firebase.database.getValue
+import edu.ap.mobile_development_project.domain.City
 import edu.ap.mobile_development_project.screens.AddCityScreen
 import edu.ap.mobile_development_project.screens.LoginScreen
 import edu.ap.mobile_development_project.screens.OverviewScreen
 import edu.ap.mobile_development_project.ui.theme.Mobile_development_projectTheme
+import edu.ap.mobile_development_project.viewModels.CitiesViewModel
 
 class MainActivity : ComponentActivity() {
     private lateinit var auth: FirebaseAuth
-    private lateinit var database: DatabaseReference
-
+    private lateinit var authListener: FirebaseAuth.AuthStateListener
+    private val citiesViewModel: CitiesViewModel by viewModels()
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Initialize Firebase Auth
         auth = Firebase.auth
-        // Initialize Firebase Database
-        database = Firebase.database.reference
-
+        authListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            val user = firebaseAuth.currentUser
+            if (user != null) {
+                // User is authenticated AND the token is valid
+                citiesViewModel.loadCities()
+            }
+        }
 
         enableEdgeToEdge()
         setContent {
@@ -64,7 +78,9 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(Screen.Overview.name) {
+                            val cities by citiesViewModel.cities.collectAsState()
                             OverviewScreen(
+                                cities = cities,
                                 navController = navController,
                                 modifier = Modifier.padding(innerPadding)
                             )
@@ -74,10 +90,12 @@ class MainActivity : ComponentActivity() {
                             AddCityScreen(
                                 navController = navController,
                                 onAddCity = { name, longitude, latitude ->
-                                    addCity(
-                                        name,
-                                        longitude,
-                                        latitude
+                                    citiesViewModel.addCity(
+                                        City(
+                                            name,
+                                            longitude.toDouble(),
+                                            latitude.toDouble()
+                                        )
                                     )
                                 },
                                 modifier = Modifier.padding(16.dp)
@@ -91,15 +109,12 @@ class MainActivity : ComponentActivity() {
 
     public override fun onStart() {
         super.onStart()
-        // Check if user is signed in (non-null) and update UI accordingly.
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-            reload()
-        }
+        auth.addAuthStateListener(authListener)
     }
 
-    private fun addCity(name: String, longitude: String, latitude: String) {
-
+    public override fun onStop() {
+        super.onStop()
+        auth.removeAuthStateListener(authListener)
     }
 
     private fun createAccount(email: String, password: String) {
@@ -146,9 +161,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun updateUI(user: FirebaseUser?) {
-    }
-
-    private fun reload() {
     }
 
     companion object {
