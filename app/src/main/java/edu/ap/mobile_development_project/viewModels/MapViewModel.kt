@@ -1,4 +1,4 @@
-package edu.ap.mobile_development_project
+package edu.ap.mobile_development_project.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
