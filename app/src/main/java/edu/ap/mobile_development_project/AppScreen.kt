@@ -1,6 +1,5 @@
 package edu.ap.mobile_development_project
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -33,9 +32,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import edu.ap.mobile_development_project.domain.City
+import edu.ap.mobile_development_project.enums.Category
 import edu.ap.mobile_development_project.screens.AddCityScreen
 import edu.ap.mobile_development_project.screens.LoginScreen
 import edu.ap.mobile_development_project.screens.OverviewScreen
+import edu.ap.mobile_development_project.screens.PointOfInterest
+import edu.ap.mobile_development_project.screens.PointOfInterestList
+import edu.ap.mobile_development_project.screens.PointOfInterestOverview
 import edu.ap.mobile_development_project.viewModels.AuthViewModel
 import edu.ap.mobile_development_project.viewModels.CitiesViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -44,7 +47,8 @@ import kotlinx.coroutines.launch
 enum class Screen {
     Login,
     Overview,
-    AddCity
+    AddCity,
+    PointOfInterestList
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -184,6 +188,24 @@ fun App(
                             )
                         },
                         modifier = Modifier.padding(16.dp)
+                    )
+                }
+
+                composable(Screen.PointOfInterestList.name) {
+                    PointOfInterestOverview(
+                        pointsOfInterest = listOf(
+                            PointOfInterest(
+                                "Point of Interest 1",
+                                1.0,
+                                1.0,
+                                "image",
+                                listOf(
+                                    Category.Cafe,
+                                ),
+                                "1"
+                            )
+                        ),
+                        navController = navController
                     )
                 }
             }
