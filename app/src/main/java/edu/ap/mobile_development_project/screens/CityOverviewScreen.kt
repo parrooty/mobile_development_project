@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,33 +13,54 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import edu.ap.mobile_development_project.Map
 import edu.ap.mobile_development_project.Screen
 import edu.ap.mobile_development_project.domain.City
 
 @Composable
-fun OverviewScreen(
+fun CityOverviewScreen(
     cities: List<City>,
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
+    var searchText by remember { mutableStateOf("") }
+    var filter by remember { mutableStateOf("") }
+
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column() {
-            Map(modifier = modifier.fillMaxHeight(.5f))
-            CityList(cities = cities, modifier = modifier.fillMaxHeight())
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(8.dp)
+            ) {
+                TextField(
+                    value = searchText,
+                    onValueChange = { searchText = it; filter = "" },
+                    label = { Text("Search") },
+                )
+                Button(
+                    onClick = { filter = searchText },
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text("Search")
+                }
+            }
+            CityList(cities = cities.filter { it.name.contains(filter) }, modifier = modifier.fillMaxHeight())
         }
 
         FloatingActionButton(
@@ -55,9 +75,11 @@ fun OverviewScreen(
 
 @Composable
 fun CityList(cities: List<City>, modifier: Modifier) {
-    Column(modifier = modifier
-        .fillMaxHeight()
-        .verticalScroll(rememberScrollState())) {
+    Column(
+        modifier = modifier
+            .fillMaxHeight()
+            .verticalScroll(rememberScrollState())
+    ) {
         cities.forEach { city ->
             CityItem(city = city, 0, modifier = Modifier)
         }
@@ -95,11 +117,11 @@ fun CityItem(city: City, poiAmount: Int, modifier: Modifier) {
 @Composable
 fun OverviewScreenPreview() {
     val cities = listOf<City>(
-        City("City1", 1.0, 1.0),
-        City("City2", 2.0, 2.0),
-        City("City3", 3.0, 3.0),
-        City("City4", 4.0, 4.0),
-        City("City5", 5.0, 5.0)
+        City("City1"),
+        City("City2"),
+        City("City3"),
+        City("City4"),
+        City("City5")
     )
     CityList(cities = cities, modifier = Modifier.fillMaxHeight())
 }
