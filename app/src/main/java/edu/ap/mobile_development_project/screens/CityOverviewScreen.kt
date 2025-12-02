@@ -13,7 +13,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
@@ -60,7 +59,7 @@ fun CityOverviewScreen(
                     Text("Search")
                 }
             }
-            CityList(cities = cities.filter { it.name.contains(filter) }, modifier = modifier.fillMaxHeight())
+            CityList(cities = cities.filter { it.name.lowercase().contains(filter.lowercase()) }, modifier = modifier.fillMaxHeight())
         }
 
         FloatingActionButton(
