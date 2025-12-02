@@ -19,12 +19,10 @@ import androidx.navigation.NavHostController
 @Composable
 fun AddCityScreen(
     navController: NavHostController,
-    onAddCity: (String, String, String) -> Unit,
+    onAddCity: (String) -> Unit,
     modifier: Modifier
 ) {
     var name by remember { mutableStateOf("") }
-    var longitude by remember { mutableStateOf("") }
-    var latitude by remember { mutableStateOf("") }
 
     Column(
         modifier = modifier,
@@ -36,23 +34,9 @@ fun AddCityScreen(
             onValueChange = { name = it },
             label = { Text("City Name") }
         )
-        Spacer(modifier = Modifier.height(16.dp))
-        TextField(
-            value = longitude,
-            onValueChange = { longitude = it },
-            label = { Text("Longitude") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        TextField(
-            value = latitude,
-            onValueChange = { latitude = it },
-            label = { Text("Latitude") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
         Spacer(modifier = Modifier.height(8.dp))
         Button(
-            onClick = { onAddCity(name, longitude, latitude) },
+            onClick = { onAddCity(name) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Add City")

@@ -1,6 +1,5 @@
 package edu.ap.mobile_development_project
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -35,7 +34,7 @@ import androidx.navigation.compose.rememberNavController
 import edu.ap.mobile_development_project.domain.City
 import edu.ap.mobile_development_project.screens.AddCityScreen
 import edu.ap.mobile_development_project.screens.LoginScreen
-import edu.ap.mobile_development_project.screens.OverviewScreen
+import edu.ap.mobile_development_project.screens.CityOverviewScreen
 import edu.ap.mobile_development_project.viewModels.AuthViewModel
 import edu.ap.mobile_development_project.viewModels.CitiesViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -165,7 +164,7 @@ fun App(
 
                 composable(Screen.Overview.name) {
                     val cities by citiesViewModel.cities.collectAsState()
-                    OverviewScreen(
+                    CityOverviewScreen(
                         cities = cities,
                         navController = navController,
                     )
@@ -174,12 +173,10 @@ fun App(
                 composable(Screen.AddCity.name) {
                     AddCityScreen(
                         navController = navController,
-                        onAddCity = { name, longitude, latitude ->
+                        onAddCity = { name ->
                             citiesViewModel.addCity(
                                 City(
-                                    name,
-                                    longitude.toDouble(),
-                                    latitude.toDouble()
+                                    name
                                 )
                             )
                         },
