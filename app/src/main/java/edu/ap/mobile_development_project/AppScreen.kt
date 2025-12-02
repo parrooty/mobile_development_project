@@ -135,7 +135,6 @@ fun App(
                     navController.navigate(Screen.Overview.name) {
                         popUpTo(Screen.Login.name) { inclusive = true }
                     }
-                    citiesViewModel.loadCities()
                 } else {
                     navController.navigate(Screen.Login.name) {
                         popUpTo(Screen.Overview.name) { inclusive = true }
