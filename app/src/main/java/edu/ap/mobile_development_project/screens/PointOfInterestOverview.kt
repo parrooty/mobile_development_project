@@ -11,26 +11,35 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.fitOutside
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import edu.ap.mobile_development_project.Map
 import edu.ap.mobile_development_project.enums.Category
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun PointOfInterestOverview(
@@ -39,8 +48,16 @@ fun PointOfInterestOverview(
     modifier: Modifier = Modifier
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        Column() {
-
+        Column {
+            Map(
+                modifier = Modifier
+                    .height(300.dp)
+                    .fillMaxWidth()
+            )
+            PointOfInterestList(
+                pointsOfInterest = pointsOfInterest,
+                modifier = modifier.fillMaxHeight()
+            )
         }
     }
 }
@@ -48,10 +65,41 @@ fun PointOfInterestOverview(
 @Composable
 fun PointOfInterestList(
     pointsOfInterest: List<PointOfInterest>,
-    modifier: Modifier) {
-    Column(modifier = modifier) {
-        pointsOfInterest.forEach { pointOfInterest ->
-            PointOfInterestItem(pointOfInterest = pointOfInterest, modifier = Modifier.height(20.dp))
+    scope: CoroutineScope = rememberCoroutineScope(),
+    modifier: Modifier
+) {
+    val scrollState = rememberScrollState()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = modifier
+                .padding(5.dp, 5.dp)
+                .verticalScroll(scrollState),
+        ) {
+            pointsOfInterest.forEach { pointOfInterest ->
+                PointOfInterestItem(
+                    pointOfInterest = pointOfInterest,
+                    modifier = Modifier.height(20.dp)
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+        }
+        if (scrollState.value > 150) {
+            FloatingActionButton(
+                onClick = {
+                    scope.launch {
+                        scrollState.animateScrollTo(0)
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.KeyboardArrowUp,
+                    contentDescription = "Scroll to top"
+                )
+            }
         }
     }
 }
@@ -59,7 +107,18 @@ fun PointOfInterestList(
 
 @Composable
 fun PointOfInterestItem(pointOfInterest: PointOfInterest, modifier: Modifier) {
-    val imageBytes = Base64.decode(pointOfInterest.image, Base64.DEFAULT)
+
+
+    var imageBytes: ByteArray? = null;
+
+    try {
+        imageBytes = Base64.decode(pointOfInterest.image, Base64.DEFAULT)
+    } catch (e: Exception) {
+        imageBytes = Base64.decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAADMElEQVR4nOzVwQnAIBQFQYXff81RUkQCOyDj1YOPnbXWPmeTRef+/3O/OyBjzh3CD95BfqICMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMO0TAAD//2Anhf4QtqobAAAAAElFTkSuQmCC",
+            Base64.DEFAULT
+        )
+    }
 
     Card(
         modifier = Modifier
@@ -67,13 +126,16 @@ fun PointOfInterestItem(pointOfInterest: PointOfInterest, modifier: Modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth().height(150.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp)
         ) {
             Image(
                 bitmap = BitmapFactory.decodeByteArray(
                     imageBytes,
                     0,
-                    imageBytes.size)
+                    imageBytes.size
+                )
                     .asImageBitmap(),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
@@ -86,7 +148,8 @@ fun PointOfInterestItem(pointOfInterest: PointOfInterest, modifier: Modifier) {
         ) {
             Text(
                 text = pointOfInterest.name,
-                modifier = Modifier.height(40.dp)
+                modifier = Modifier
+                    .height(40.dp)
                     .padding(5.dp, 10.dp, 0.dp, 0.dp),
                 style = TextStyle(
                     fontSize = 20.sp
@@ -96,26 +159,53 @@ fun PointOfInterestItem(pointOfInterest: PointOfInterest, modifier: Modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.padding(5.dp, 0.dp, 5.dp, 10.dp)
+            modifier = Modifier
+                .padding(5.dp, 0.dp, 5.dp, 10.dp)
+                .fillMaxWidth()
         ) {
-            Column {
-                for (category in pointOfInterest.categories) {
+            Column(
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    for (category in pointOfInterest.categories) {
+                        Text(
+                            text = category.toString()
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                    }
+                }
+            }
+            Column(
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.End
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
                     Text(
-                        text = category.toString()
+                        text = "Review: 4.7"
+                    )
+                    Icon(
+                        imageVector = Icons.Filled.Star,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = Color.hsl(54f, 0.89f, 0.50f)
                     )
                 }
             }
-            Spacer(modifier = Modifier.fillMaxWidth(0.8f))
-            Text(
-                text = "Review: 4.7"
-            )
         }
     }
 }
 
 @Preview
 @Composable
-fun PointOfInterestListPreview() {
+fun PointOfInterestListPreview(
+    scope: CoroutineScope = rememberCoroutineScope()
+) {
+    val scrollState = rememberScrollState()
     val pointsOfInterest = listOf<PointOfInterest>(
         PointOfInterest(
             "Point of Interest 1",
@@ -139,5 +229,8 @@ fun PointOfInterestListPreview() {
             "1"
         )
     )
-    PointOfInterestList(pointsOfInterest = pointsOfInterest, modifier = Modifier)
+    PointOfInterestList(
+        pointsOfInterest = pointsOfInterest,
+        modifier = Modifier
+    )
 }
