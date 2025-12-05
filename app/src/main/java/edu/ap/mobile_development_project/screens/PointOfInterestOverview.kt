@@ -3,6 +3,8 @@ package edu.ap.mobile_development_project.screens
 import android.graphics.BitmapFactory
 import android.util.Base64
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,20 +18,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -43,11 +53,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import edu.ap.mobile_development_project.Map
 import edu.ap.mobile_development_project.enums.Category
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlin.math.round
 
 @Composable
 fun PointOfInterestOverview(
@@ -55,6 +67,8 @@ fun PointOfInterestOverview(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
+    val openRatingDialog = remember { mutableStateOf(false) }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
             Map(
@@ -64,17 +78,25 @@ fun PointOfInterestOverview(
             )
             PointOfInterestList(
                 pointsOfInterest = pointsOfInterest,
-                modifier = modifier.fillMaxHeight()
+                modifier = modifier.fillMaxHeight(),
+                openRatingDialog = openRatingDialog
             )
         }
     }
+    if (openRatingDialog.value) RatingWindow(
+        onDismissRequest = { openRatingDialog.value = false },
+        onConfirmation = { openRatingDialog.value = false },
+        dialogTitle = "Rate Point of Interest",
+        dialogText = "Please rate the point of interest"
+    )
 }
 
 @Composable
 fun PointOfInterestList(
     pointsOfInterest: List<PointOfInterest>,
     scope: CoroutineScope = rememberCoroutineScope(),
-    modifier: Modifier
+    modifier: Modifier,
+    openRatingDialog: MutableState<Boolean>
 ) {
     val scrollState = rememberScrollState()
     var selectedCategories by remember { mutableStateOf<Set<Category>>(emptySet()) }
@@ -138,7 +160,8 @@ fun PointOfInterestList(
             filteredPointsOfInterest.forEach { pointOfInterest ->
                 PointOfInterestItem(
                     pointOfInterest = pointOfInterest,
-                    modifier = Modifier.height(20.dp)
+                    modifier = Modifier.height(20.dp),
+                    openRatingDialog = openRatingDialog
                 )
                 Spacer(modifier = Modifier.height(10.dp))
             }
@@ -168,6 +191,7 @@ fun PointOfInterestList(
 fun PointOfInterestItem(
     pointOfInterest: PointOfInterest,
     modifier: Modifier,
+    openRatingDialog: MutableState<Boolean>
 ) {
     var imageBytes: ByteArray? = null;
 
@@ -245,15 +269,19 @@ fun PointOfInterestItem(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Text(
-                        text = "Review: 4.7"
-                    )
-                    Icon(
-                        imageVector = Icons.Filled.Star,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = Color.hsl(54f, 0.89f, 0.50f)
-                    )
+                    Button(
+                        onClick = { openRatingDialog.value = true },
+                    ) {
+                        Text(
+                            text = "Review: 4.7"
+                        )
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = Color.hsl(54f, 0.89f, 0.50f)
+                        )
+                    }
                 }
             }
         }
@@ -284,6 +312,69 @@ fun FilterChip(text: String,
             null
         },
     )
+}
+
+@Composable
+fun RatingWindow(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit,
+    dialogTitle: String,
+    dialogText: String,
+) {
+    var rating by remember { mutableIntStateOf(0) }
+
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 20.dp)
+                    .background(color = Color.White)
+                    .border(
+                        shape = RoundedCornerShape(10.dp),
+                        width = 0.dp,
+                        color = Color.Transparent
+                    )
+                    .height(100.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row {
+                    for (i in 1..5) {
+                        IconButton(
+                            colors = IconButtonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = Color.Black,
+                                disabledContainerColor = Color.Transparent,
+                                disabledContentColor = Color.Transparent
+                            ),
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(0.dp),
+                            onClick = {
+                                rating = i
+                            }) {
+                            Icon(
+                                imageVector = if (i <= rating) Icons.Filled.Star else Icons.Outlined.StarOutline,
+                                contentDescription = "Star $i",
+                                tint = if (i <= rating) Color.hsl(54f, 0.89f, 0.50f) else Color.Gray,
+                                modifier = Modifier.size(32.dp),
+                            )
+                        }
+                    }
+                }
+                Row {
+                    Button(onClick = onDismissRequest) {
+                        Text("Cancel")
+                    }
+                    Button(onClick = onConfirmation) {
+                        Text("Confirm")
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Preview
@@ -317,6 +408,7 @@ fun PointOfInterestListPreview(
     )
     PointOfInterestList(
         pointsOfInterest = pointsOfInterest,
-        modifier = Modifier
+        modifier = Modifier,
+        openRatingDialog = remember { mutableStateOf(false) }
     )
 }
