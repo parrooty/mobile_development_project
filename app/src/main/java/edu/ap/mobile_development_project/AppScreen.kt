@@ -49,7 +49,7 @@ enum class Screen {
     Login,
     Overview,
     AddCity,
-    PointOfInterestList,
+    PointOfInterestOverview,
     AddPointOfInterest
 }
 
