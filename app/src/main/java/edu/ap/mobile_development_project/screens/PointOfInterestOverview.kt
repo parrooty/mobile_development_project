@@ -18,14 +18,22 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -69,6 +77,23 @@ fun PointOfInterestList(
     modifier: Modifier
 ) {
     val scrollState = rememberScrollState()
+    var selectedCategories by remember { mutableStateOf<Set<Category>>(emptySet()) }
+
+    val filteredPointsOfInterest by remember(selectedCategories, pointsOfInterest) {
+        derivedStateOf {
+            if (selectedCategories.isEmpty()) {
+                pointsOfInterest
+            } else {
+                pointsOfInterest.filter { poi ->
+                    poi.categories.any { it in selectedCategories }
+                }
+            }
+        }
+    }
+
+    val (selectedChips, unselectedChips) = remember(selectedCategories) {
+        Category.entries.partition { it in selectedCategories }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -76,7 +101,41 @@ fun PointOfInterestList(
                 .padding(5.dp, 5.dp)
                 .verticalScroll(scrollState),
         ) {
-            pointsOfInterest.forEach { pointOfInterest ->
+            Text(
+                text = "Filters",
+                modifier = Modifier,
+                style = TextStyle(
+                    fontSize = 20.sp
+                )
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                if (selectedChips.isNotEmpty()) {
+                    selectedChips.forEach { category ->
+                        FilterChip(
+                            text = category.toString(),
+                            selected = true,
+                            onClick = {
+                                selectedCategories = selectedCategories - category
+                            },
+                            modifier = Modifier,
+                        )
+                    }
+                }
+                unselectedChips.forEach { category ->
+                    val isSelected = category in selectedCategories
+                    FilterChip(
+                        text = category.toString(),
+                        selected = isSelected,
+                        onClick = {
+                            selectedCategories += category
+                        },
+                        modifier = Modifier,
+                    )
+                }
+            }
+            filteredPointsOfInterest.forEach { pointOfInterest ->
                 PointOfInterestItem(
                     pointOfInterest = pointOfInterest,
                     modifier = Modifier.height(20.dp)
@@ -106,9 +165,10 @@ fun PointOfInterestList(
 
 
 @Composable
-fun PointOfInterestItem(pointOfInterest: PointOfInterest, modifier: Modifier) {
-
-
+fun PointOfInterestItem(
+    pointOfInterest: PointOfInterest,
+    modifier: Modifier,
+) {
     var imageBytes: ByteArray? = null;
 
     try {
@@ -198,6 +258,32 @@ fun PointOfInterestItem(pointOfInterest: PointOfInterest, modifier: Modifier) {
             }
         }
     }
+}
+
+@Composable
+fun FilterChip(text: String,
+               selected: Boolean,
+               onClick: () -> Unit,
+               modifier: Modifier
+) {
+    FilterChip(
+        onClick = onClick,
+        label = {
+            Text(text)
+        },
+        selected = selected,
+        leadingIcon = if (selected) {
+            {
+                Icon(
+                    imageVector = Icons.Filled.Done,
+                    contentDescription = "Done icon",
+                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                )
+            }
+        } else {
+            null
+        },
+    )
 }
 
 @Preview
