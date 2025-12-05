@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import edu.ap.mobile_development_project.domain.PointOfInterest
 import edu.ap.mobile_development_project.enums.Category
 import java.io.File
 import kotlin.io.encoding.Base64

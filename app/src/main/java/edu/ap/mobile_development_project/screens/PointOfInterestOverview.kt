@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import edu.ap.mobile_development_project.Map
+import edu.ap.mobile_development_project.domain.PointOfInterest
 import edu.ap.mobile_development_project.enums.Category
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch

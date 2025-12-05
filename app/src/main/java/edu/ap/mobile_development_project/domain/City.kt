@@ -4,11 +4,13 @@ import com.google.firebase.database.IgnoreExtraProperties
 
 @IgnoreExtraProperties
 class City {
+    var id: String = ""
     var name: String = ""
 
     constructor()
 
-    constructor(name: String) {
+    constructor(id: String, name: String) {
+        this.id = id
         this.name = name
     }
 }
