@@ -34,6 +34,7 @@ import androidx.navigation.compose.rememberNavController
 import edu.ap.mobile_development_project.domain.City
 import edu.ap.mobile_development_project.enums.Category
 import edu.ap.mobile_development_project.screens.AddCityScreen
+import edu.ap.mobile_development_project.screens.AddPoIScreen
 import edu.ap.mobile_development_project.screens.LoginScreen
 import edu.ap.mobile_development_project.screens.CityOverviewScreen
 import edu.ap.mobile_development_project.screens.PointOfInterest
@@ -48,7 +49,8 @@ enum class Screen {
     Login,
     Overview,
     AddCity,
-    PointOfInterestList
+    PointOfInterestList,
+    AddPointOfInterest
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -203,6 +205,15 @@ fun App(
                             )
                         ),
                         navController = navController
+                    )
+                }
+
+                composable(Screen.AddPointOfInterest.name) {
+                    AddPoIScreen(
+                        navController = navController,
+                        onAddPoI = {},
+                        categories = listOf(Category.Cafe, Category.Museum),
+                        modifier = Modifier
                     )
                 }
             }
