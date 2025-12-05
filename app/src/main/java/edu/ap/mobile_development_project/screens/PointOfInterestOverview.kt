@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -59,7 +58,6 @@ import edu.ap.mobile_development_project.Map
 import edu.ap.mobile_development_project.enums.Category
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlin.math.round
 
 @Composable
 fun PointOfInterestOverview(
@@ -68,6 +66,7 @@ fun PointOfInterestOverview(
     modifier: Modifier = Modifier
 ) {
     val openRatingDialog = remember { mutableStateOf(false) }
+    val selectedPOIId = remember { mutableStateOf<String?>(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
@@ -79,7 +78,8 @@ fun PointOfInterestOverview(
             PointOfInterestList(
                 pointsOfInterest = pointsOfInterest,
                 modifier = modifier.fillMaxHeight(),
-                openRatingDialog = openRatingDialog
+                openRatingDialog = openRatingDialog,
+                selectedPOIId = selectedPOIId
             )
         }
     }
@@ -96,7 +96,8 @@ fun PointOfInterestList(
     pointsOfInterest: List<PointOfInterest>,
     scope: CoroutineScope = rememberCoroutineScope(),
     modifier: Modifier,
-    openRatingDialog: MutableState<Boolean>
+    openRatingDialog: MutableState<Boolean>,
+    selectedPOIId: MutableState<String?>
 ) {
     val scrollState = rememberScrollState()
     var selectedCategories by remember { mutableStateOf<Set<Category>>(emptySet()) }
@@ -161,7 +162,8 @@ fun PointOfInterestList(
                 PointOfInterestItem(
                     pointOfInterest = pointOfInterest,
                     modifier = Modifier.height(20.dp),
-                    openRatingDialog = openRatingDialog
+                    openRatingDialog = openRatingDialog,
+                    selectedPOIId = selectedPOIId
                 )
                 Spacer(modifier = Modifier.height(10.dp))
             }
@@ -191,7 +193,8 @@ fun PointOfInterestList(
 fun PointOfInterestItem(
     pointOfInterest: PointOfInterest,
     modifier: Modifier,
-    openRatingDialog: MutableState<Boolean>
+    openRatingDialog: MutableState<Boolean>,
+    selectedPOIId: MutableState<String?>
 ) {
     var imageBytes: ByteArray? = null;
 
@@ -270,7 +273,7 @@ fun PointOfInterestItem(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Button(
-                        onClick = { openRatingDialog.value = true },
+                        onClick = { openRatingDialog.value = true; selectedPOIId.value = pointOfInterest.id },
                     ) {
                         Text(
                             text = "Review: 4.7"
@@ -320,6 +323,7 @@ fun RatingWindow(
     onConfirmation: () -> Unit,
     dialogTitle: String,
     dialogText: String,
+    pointOfInterestId: String? = null
 ) {
     var rating by remember { mutableIntStateOf(0) }
 
