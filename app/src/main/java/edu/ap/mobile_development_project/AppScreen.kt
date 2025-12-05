@@ -37,8 +37,8 @@ import edu.ap.mobile_development_project.screens.AddCityScreen
 import edu.ap.mobile_development_project.screens.AddPoIScreen
 import edu.ap.mobile_development_project.screens.LoginScreen
 import edu.ap.mobile_development_project.screens.CityOverviewScreen
+import edu.ap.mobile_development_project.screens.LoginScreen
 import edu.ap.mobile_development_project.screens.PointOfInterest
-import edu.ap.mobile_development_project.screens.PointOfInterestList
 import edu.ap.mobile_development_project.screens.PointOfInterestOverview
 import edu.ap.mobile_development_project.viewModels.AuthViewModel
 import edu.ap.mobile_development_project.viewModels.CitiesViewModel
@@ -117,6 +117,14 @@ fun App(
 
     HamburgerMenu(
         drawerState = drawerState,
+        onNavigateToScreen = { screen ->
+            scope.launch {
+                drawerState.close()
+                navController.navigate(screen.name) {
+                    popUpTo(Screen.Overview.name) { inclusive = true }
+                }
+            }
+        },
         onSignOut = {
             scope.launch {
                 drawerState.close()
@@ -190,11 +198,29 @@ fun App(
                     )
                 }
 
-                composable(Screen.PointOfInterestList.name) {
+                composable(Screen.PointOfInterestOverview.name) {
                     PointOfInterestOverview(
                         pointsOfInterest = listOf(
                             PointOfInterest(
                                 "Point of Interest 1",
+                                1.0,
+                                1.0,
+                                "image",
+                                listOf(
+                                    Category.Cafe,
+                                ),
+                                "1"
+                            ),PointOfInterest(
+                                "Point of Interest 2",
+                                1.0,
+                                1.0,
+                                "image",
+                                listOf(
+                                    Category.Cafe,
+                                ),
+                                "1"
+                            ),PointOfInterest(
+                                "Point of Interest 3",
                                 1.0,
                                 1.0,
                                 "image",
@@ -224,12 +250,24 @@ fun App(
 @Composable
 fun HamburgerMenu(
     drawerState: DrawerState,
+    onNavigateToScreen: (Screen) -> Unit,
     onSignOut: () -> Unit,
     content: @Composable () -> Unit
 ) {
     ModalNavigationDrawer(
+        gesturesEnabled = drawerState.isOpen,
         drawerContent = {
             ModalDrawerSheet {
+                NavigationDrawerItem(
+                    label = { Text(text = "Cities") },
+                    selected = false,
+                    onClick = { onNavigateToScreen(Screen.Overview) }
+                )
+                NavigationDrawerItem(
+                    label = { Text(text = "POI's") },
+                    selected = false,
+                    onClick = { onNavigateToScreen(Screen.PointOfInterestOverview) }
+                )
                 NavigationDrawerItem(
                     label = { Text(text = "Logout") },
                     selected = false,
