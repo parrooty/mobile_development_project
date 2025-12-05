@@ -37,8 +37,7 @@ import edu.ap.mobile_development_project.screens.AddCityScreen
 import edu.ap.mobile_development_project.screens.AddPoIScreen
 import edu.ap.mobile_development_project.screens.LoginScreen
 import edu.ap.mobile_development_project.screens.CityOverviewScreen
-import edu.ap.mobile_development_project.screens.LoginScreen
-import edu.ap.mobile_development_project.screens.PointOfInterest
+import edu.ap.mobile_development_project.domain.PointOfInterest
 import edu.ap.mobile_development_project.screens.PointOfInterestOverview
 import edu.ap.mobile_development_project.viewModels.AuthViewModel
 import edu.ap.mobile_development_project.viewModels.CitiesViewModel

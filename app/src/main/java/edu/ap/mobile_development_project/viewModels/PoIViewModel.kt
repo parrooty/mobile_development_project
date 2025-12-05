@@ -9,7 +9,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.database
-import edu.ap.mobile_development_project.screens.PointOfInterest
+import edu.ap.mobile_development_project.domain.PointOfInterest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -68,7 +68,9 @@ class PoIViewModel : ViewModel() {
     }
 
     fun addPoI(poi: PointOfInterest) {
-        db.child("pois").push().setValue(poi)
+        val key = db.child("pois").push().key ?: throw Exception("Key is null")
+        poi.id = key
+        db.child("pois").child(key).setValue(poi)
     }
 
 }
