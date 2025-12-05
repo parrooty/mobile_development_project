@@ -42,6 +42,7 @@ import edu.ap.mobile_development_project.screens.PointOfInterest
 import edu.ap.mobile_development_project.screens.PointOfInterestOverview
 import edu.ap.mobile_development_project.viewModels.AuthViewModel
 import edu.ap.mobile_development_project.viewModels.CitiesViewModel
+import edu.ap.mobile_development_project.viewModels.PoIViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -101,6 +102,7 @@ fun AppBar(
 fun App(
     authViewModel: AuthViewModel,
     citiesViewModel: CitiesViewModel,
+    poiViewModel: PoIViewModel,
     navController: NavHostController = rememberNavController()
 ) {
     // Get current back stack entry
