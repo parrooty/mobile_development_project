@@ -31,6 +31,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.location.FusedLocationProviderClient
 import edu.ap.mobile_development_project.domain.City
 import edu.ap.mobile_development_project.enums.Category
 import edu.ap.mobile_development_project.screens.AddCityScreen
@@ -42,6 +43,7 @@ import edu.ap.mobile_development_project.domain.Rating
 import edu.ap.mobile_development_project.screens.PointOfInterestOverview
 import edu.ap.mobile_development_project.viewModels.AuthViewModel
 import edu.ap.mobile_development_project.viewModels.CitiesViewModel
+import edu.ap.mobile_development_project.viewModels.MapViewModel
 import edu.ap.mobile_development_project.viewModels.PoIViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -103,6 +105,8 @@ fun App(
     authViewModel: AuthViewModel,
     citiesViewModel: CitiesViewModel,
     poiViewModel: PoIViewModel,
+    mapViewModel: MapViewModel,
+    fusedLocationClient: FusedLocationProviderClient,
     navController: NavHostController = rememberNavController()
 ) {
     // Get current back stack entry
@@ -145,7 +149,7 @@ fun App(
                 drawerState = drawerState,
                 scope = scope
             )
-        } ) { innerPadding ->
+        }) { innerPadding ->
             // Navigate based on auth state
             LaunchedEffect(currentUser) {
                 if (currentUser != null) {
@@ -206,6 +210,7 @@ fun App(
                             PointOfInterest(
                                 "afaskhaoifu",
                                 "Point of Interest 1",
+                                "Description",
                                 1.0,
                                 1.0,
                                 "image",
@@ -224,6 +229,7 @@ fun App(
                             ),PointOfInterest(
                                 "i8egweiodvh",
                                 "Point of Interest 2",
+                                "Description",
                                 1.0,
                                 1.0,
                                 "image",
@@ -242,6 +248,7 @@ fun App(
                             ),PointOfInterest(
                                 "iuebnlviesufef",
                                 "Point of Interest 3",
+                                "Description",
                                 1.0,
                                 1.0,
                                 "image",
@@ -266,9 +273,11 @@ fun App(
                 composable(Screen.AddPointOfInterest.name) {
                     AddPoIScreen(
                         navController = navController,
-                        onAddPoI = {},
+                        onAddPoI = { poi -> poiViewModel.addPoI(poi) },
                         categories = listOf(Category.Cafe, Category.Museum),
-                        modifier = Modifier
+                        fusedLocationClient = fusedLocationClient,
+                        mapViewModel = mapViewModel,
+                        citiesViewModel = citiesViewModel
                     )
                 }
             }
@@ -296,6 +305,11 @@ fun HamburgerMenu(
                     label = { Text(text = "POI's") },
                     selected = false,
                     onClick = { onNavigateToScreen(Screen.PointOfInterestOverview) }
+                )
+                NavigationDrawerItem(
+                    label = { Text(text = "Add POI") },
+                    selected = false,
+                    onClick = { onNavigateToScreen(Screen.AddPointOfInterest) }
                 )
                 NavigationDrawerItem(
                     label = { Text(text = "Logout") },
