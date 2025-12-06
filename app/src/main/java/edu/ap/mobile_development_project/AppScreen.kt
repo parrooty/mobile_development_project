@@ -31,6 +31,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.location.FusedLocationProviderClient
 import edu.ap.mobile_development_project.domain.City
 import edu.ap.mobile_development_project.enums.Category
 import edu.ap.mobile_development_project.screens.AddCityScreen
@@ -102,6 +103,7 @@ fun App(
     authViewModel: AuthViewModel,
     citiesViewModel: CitiesViewModel,
     poiViewModel: PoIViewModel,
+    fusedLocationClient: FusedLocationProviderClient,
     navController: NavHostController = rememberNavController()
 ) {
     // Get current back stack entry
@@ -239,7 +241,8 @@ fun App(
                     AddPoIScreen(
                         navController = navController,
                         onAddPoI = { poi -> poiViewModel.addPoI(poi) },
-                        categories = listOf(Category.Cafe, Category.Museum)
+                        categories = listOf(Category.Cafe, Category.Museum),
+                        fusedLocationClient = fusedLocationClient
                     )
                 }
             }
