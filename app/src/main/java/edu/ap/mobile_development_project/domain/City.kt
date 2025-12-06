@@ -13,4 +13,10 @@ class City {
         this.id = id
         this.name = name
     }
+
+    constructor(name: String) {
+        this.name = name
+    }
+
+
 }

@@ -144,7 +144,7 @@ fun App(
                 drawerState = drawerState,
                 scope = scope
             )
-        } ) { innerPadding ->
+        }) { innerPadding ->
             // Navigate based on auth state
             LaunchedEffect(currentUser) {
                 if (currentUser != null) {
@@ -211,7 +211,7 @@ fun App(
                                     Category.Cafe,
                                 ),
                                 "1"
-                            ),PointOfInterest(
+                            ), PointOfInterest(
                                 "Point of Interest 2",
                                 1.0,
                                 1.0,
@@ -220,7 +220,7 @@ fun App(
                                     Category.Cafe,
                                 ),
                                 "1"
-                            ),PointOfInterest(
+                            ), PointOfInterest(
                                 "Point of Interest 3",
                                 1.0,
                                 1.0,
@@ -238,7 +238,7 @@ fun App(
                 composable(Screen.AddPointOfInterest.name) {
                     AddPoIScreen(
                         navController = navController,
-                        onAddPoI = {},
+                        onAddPoI = { poi -> poiViewModel.addPoI(poi) },
                         categories = listOf(Category.Cafe, Category.Museum),
                         modifier = Modifier
                     )
@@ -268,6 +268,11 @@ fun HamburgerMenu(
                     label = { Text(text = "POI's") },
                     selected = false,
                     onClick = { onNavigateToScreen(Screen.PointOfInterestOverview) }
+                )
+                NavigationDrawerItem(
+                    label = { Text(text = "Add POI") },
+                    selected = false,
+                    onClick = { onNavigateToScreen(Screen.AddPointOfInterest) }
                 )
                 NavigationDrawerItem(
                     label = { Text(text = "Logout") },

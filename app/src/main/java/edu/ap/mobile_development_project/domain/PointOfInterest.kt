@@ -32,4 +32,22 @@ class PointOfInterest {
         this.categories = categories
         this.cityId = cityId
     }
+
+    constructor(
+        name: String,
+        lat: Double,
+        lon: Double,
+        image: String,
+        categories: List<Category>,
+        cityId: String
+    ) {
+        this.name = name
+        this.lat = lat
+        this.lon = lon
+        this.image = image
+        this.categories = categories
+        this.cityId = cityId
+    }
+
+
 }

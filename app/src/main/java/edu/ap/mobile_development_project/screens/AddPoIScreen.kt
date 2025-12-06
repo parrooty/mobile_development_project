@@ -2,16 +2,20 @@ package edu.ap.mobile_development_project.screens
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -30,13 +34,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.navigation.NavHostController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
+import edu.ap.mobile_development_project.BuildConfig
 import edu.ap.mobile_development_project.domain.PointOfInterest
 import edu.ap.mobile_development_project.enums.Category
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Objects
 import kotlin.io.encoding.Base64
 
 @Composable
@@ -48,56 +63,58 @@ fun AddPoIScreen(
 ) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var image by remember { mutableStateOf("") }
     var selectedCategories by remember { mutableStateOf(listOf<Category>()) }
     var expanded by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
+    val file = context.createImageFile()
+    val uri = FileProvider.getUriForFile(
+        Objects.requireNonNull(context),
+        BuildConfig.APPLICATION_ID + ".provider", file
+    )
 
-    val pickMedia =
-        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-            // Callback is invoked after the user selects a media item or closes the
-            // photo picker.
-            if (uri != null) {
-                Log.d("PhotoPicker", "Selected URI: $uri")
-                val file = copyUriToFile(context, uri)
-                image = Base64.encode(file.readBytes())
-                Log.d("PhotoPicker", "Image Base64: $image")
+    var capturedImageUri by remember {
+        mutableStateOf<Uri>(Uri.EMPTY)
+    }
 
-            } else {
-                Log.d("PhotoPicker", "No media selected")
-            }
+    val cameraLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) {
+            capturedImageUri = uri
         }
 
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        TextField(value = name, onValueChange = { name = it }, label = { Text("Name") })
-        TextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("Description") },
-            modifier = Modifier.height(100.dp)
-        )
-        Box() {
-            Button(
-                onClick = { expanded = !expanded }) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(Icons.Filled.KeyboardArrowDown, "Dropdown Arrow")
-                    Text("Select Categories")
+    CameraPermissionContext() {
+        Column(
+            modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            TextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Name") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            TextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Description") },
+                modifier = Modifier
+                    .height(100.dp)
+                    .fillMaxWidth()
+            )
+            Box() {
+                Button(
+                    onClick = { expanded = !expanded }) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Filled.KeyboardArrowDown, "Dropdown Arrow")
+                        Text("Select Categories")
+                    }
                 }
-            }
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                categories.forEach { category ->
-                    DropdownMenuItem(
-                        text = { Text(category.name) },
-                        onClick = {
+                DropdownMenu(
+                    expanded = expanded, onDismissRequest = { expanded = false }) {
+                    categories.forEach { category ->
+                        DropdownMenuItem(text = { Text(category.name) }, onClick = {
                             if (selectedCategories.contains(category)) {
                                 selectedCategories -= category
                             } else {
@@ -105,65 +122,98 @@ fun AddPoIScreen(
                             }
 
                             expanded = false
-                        },
-                        trailingIcon = {
+                        }, trailingIcon = {
                             if (selectedCategories.contains(category)) {
                                 Icon(Icons.Filled.Check, "Check")
                             }
-                        }
-                    )
+                        })
+                    }
                 }
             }
-        }
-        Row(
-            modifier = Modifier.padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            selectedCategories.forEach { category ->
-                InputChip(
-                    selected = selectedCategories.contains(category),
-                    onClick = { selectedCategories -= category },
-                    label = { Text(category.name) },
-                    trailingIcon = { Icon(Icons.Filled.Close, "Close") }
+            Row(
+                modifier = Modifier.padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                selectedCategories.forEach { category ->
+                    InputChip(
+                        selected = selectedCategories.contains(category),
+                        onClick = { selectedCategories -= category },
+                        label = { Text(category.name) },
+                        trailingIcon = { Icon(Icons.Filled.Close, "Close") })
+                }
+            }
+            Button(
+                onClick = { cameraLauncher.launch(uri) }) {
+                Text("Take photo")
+            }
+            if (capturedImageUri != Uri.EMPTY) {
+                Image(
+                    bitmap = file.readBytes().decodeToImageBitmap(),
+                    contentDescription = "Captured image",
+                    modifier = Modifier.height(200.dp)
                 )
             }
-        }
-        Button(
-            onClick = { pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
-        ) {
-            Text("Select Image")
-        }
-        Button(
-            onClick = {
-                onAddPoI(
-                    PointOfInterest(
-                        name,
-                        0.0,
-                        0.0,
-                        image,
-                        selectedCategories,
-                        "-OfTQbH99gVHScu9Vxxr"
+
+            Button(
+                onClick = {
+                    val image = Base64.encode(file.readBytes())
+                    onAddPoI(
+                        PointOfInterest(
+                            name, 0.0, 0.0, image, selectedCategories, "-OfTQbH99gVHScu9Vxxr"
+                        )
                     )
-                )
+                }) {
+                Text("Add")
             }
+
+        }
+    }
+
+
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun CameraPermissionContext(
+    modifier: Modifier = Modifier, content: @Composable () -> Unit
+) {
+    val cameraPermissionState = rememberPermissionState(android.Manifest.permission.CAMERA)
+    if (cameraPermissionState.status.isGranted) {
+        content()
+    } else {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .wrapContentSize()
+                .widthIn(max = 480.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Add")
+            val textToShow = if (cameraPermissionState.status.shouldShowRationale) {
+                "To add a new point of interest, an image taken on site is required. For this reason, we need to access your camera."
+            } else {
+                "To add a new point of interest, an image taken on site is required. For this reason, we need to access your camera."
+            }
+            Text(textToShow, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(16.dp))
+            Button(onClick = { cameraPermissionState.launchPermissionRequest() }) {
+                Text("Grant camera access")
+            }
         }
-
     }
 }
 
-fun copyUriToFile(context: Context, uri: Uri): File {
-    val inputStream = context.contentResolver.openInputStream(uri)
-    val file = File.createTempFile("selected_", ".jpg", context.cacheDir)
-
-    inputStream.use { input ->
-        file.outputStream().use { output ->
-            input?.copyTo(output)
-        }
-    }
-    return file
+fun Context.createImageFile(): File {
+    // Create an image file name
+    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+    val imageFileName = "JPEG_" + timeStamp + "_"
+    val image = File.createTempFile(
+        imageFileName, /* prefix */
+        ".jpg", /* suffix */
+        externalCacheDir      /* directory */
+    )
+    return image
 }
+
 
 @Preview
 @Composable
