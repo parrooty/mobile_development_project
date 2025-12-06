@@ -208,6 +208,7 @@ fun App(
                         pointsOfInterest = listOf(
                             PointOfInterest(
                                 "Point of Interest 1",
+                                "Description",
                                 1.0,
                                 1.0,
                                 "image",
@@ -217,6 +218,7 @@ fun App(
                                 "1"
                             ), PointOfInterest(
                                 "Point of Interest 2",
+                                "Description",
                                 1.0,
                                 1.0,
                                 "image",
@@ -226,6 +228,7 @@ fun App(
                                 "1"
                             ), PointOfInterest(
                                 "Point of Interest 3",
+                                "Description",
                                 1.0,
                                 1.0,
                                 "image",

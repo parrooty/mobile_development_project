@@ -7,6 +7,7 @@ import edu.ap.mobile_development_project.enums.Category
 class PointOfInterest {
     var id: String = ""
     var name: String = ""
+    var description: String = ""
     var lat: Double = .0
     var lon: Double = .0
     var image: String = ""
@@ -18,6 +19,7 @@ class PointOfInterest {
     constructor(
         id: String,
         name: String,
+        description: String,
         lat: Double,
         lon: Double,
         image: String,
@@ -26,6 +28,7 @@ class PointOfInterest {
     ) {
         this.id = id
         this.name = name
+        this.description = description
         this.lat = lat
         this.lon = lon
         this.image = image
@@ -35,6 +38,7 @@ class PointOfInterest {
 
     constructor(
         name: String,
+        description: String,
         lat: Double,
         lon: Double,
         image: String,
@@ -42,6 +46,7 @@ class PointOfInterest {
         cityId: String
     ) {
         this.name = name
+        this.description = description
         this.lat = lat
         this.lon = lon
         this.image = image

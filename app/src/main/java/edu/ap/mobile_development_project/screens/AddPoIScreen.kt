@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -54,6 +55,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import edu.ap.mobile_development_project.BuildConfig
+import edu.ap.mobile_development_project.Screen
 import edu.ap.mobile_development_project.domain.PointOfInterest
 import edu.ap.mobile_development_project.domain.City
 import edu.ap.mobile_development_project.enums.Category
@@ -83,6 +85,8 @@ fun AddPoIScreen(
     var expanded by remember { mutableStateOf(false) }
     var lat by remember { mutableDoubleStateOf(0.0) }
     var long by remember { mutableDoubleStateOf(0.0) }
+    var error by remember { mutableStateOf<String?>(null) }
+
 
 
 
@@ -100,6 +104,19 @@ fun AddPoIScreen(
 
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) {
         capturedImageUri = uri
+    }
+
+    if (error != null) {
+        AlertDialog(
+            onDismissRequest = { error = null },
+            title = { Text("Adding PoI failed") },
+            text = { Text(error!!) },
+            confirmButton = {
+                Button(onClick = { error = null }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 
     LocationPermissionContext {
@@ -212,7 +229,8 @@ fun AddPoIScreen(
                     Button(
                         onClick = {
                             if (capturedImageUri == Uri.EMPTY || name == "" || description == "" || selectedCategories.isEmpty()) {
-                                return@Button;
+                                error = "Please fill out all fields"
+                                return@Button
                             }
                             val city =
                                 mapViewModel.reverseEntry?.address?.city ?: "unknown city"
@@ -224,6 +242,7 @@ fun AddPoIScreen(
                             onAddPoI(
                                 PointOfInterest(
                                     name,
+                                    description,
                                     lat,
                                     long,
                                     image,
@@ -231,6 +250,8 @@ fun AddPoIScreen(
                                     cityId
                                 )
                             )
+                            navController.popBackStack()
+                            navController.navigate(Screen.Overview.name)
                         }) {
                         Row(
                             modifier = Modifier.padding(8.dp),
