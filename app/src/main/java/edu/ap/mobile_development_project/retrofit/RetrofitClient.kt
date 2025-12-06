@@ -1,7 +1,6 @@
 package edu.ap.osm.retrofit
 
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
+import edu.ap.mobile_development_project.retrofit.NominatimService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
