@@ -10,12 +10,14 @@ import com.google.android.gms.location.LocationServices
 import edu.ap.mobile_development_project.ui.theme.Mobile_development_projectTheme
 import edu.ap.mobile_development_project.viewModels.AuthViewModel
 import edu.ap.mobile_development_project.viewModels.CitiesViewModel
+import edu.ap.mobile_development_project.viewModels.MapViewModel
 import edu.ap.mobile_development_project.viewModels.PoIViewModel
 
 class MainActivity : ComponentActivity() {
     private val authViewModel: AuthViewModel by viewModels()
     private val citiesViewModel: CitiesViewModel by viewModels()
     private val poiViewModel: PoIViewModel by viewModels()
+    private val mapViewModel: MapViewModel by viewModels()
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
 
@@ -30,6 +32,7 @@ class MainActivity : ComponentActivity() {
                     authViewModel,
                     citiesViewModel,
                     poiViewModel,
+                    mapViewModel,
                     fusedLocationClient
                 )
             }

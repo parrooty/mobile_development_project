@@ -69,9 +69,10 @@ class CitiesViewModel : ViewModel() {
         }
     }
 
-    fun addCity(city: City) {
+    fun addCity(city: City) : String {
         val key = db.child("cities").push().key ?: throw Exception("Key is null")
         city.id = key
         db.child("cities").child(key).setValue(city)
+        return key
     }
 }

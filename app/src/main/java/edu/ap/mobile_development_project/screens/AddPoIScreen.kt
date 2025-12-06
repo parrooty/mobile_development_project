@@ -55,10 +55,13 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import edu.ap.mobile_development_project.BuildConfig
 import edu.ap.mobile_development_project.domain.PointOfInterest
+import edu.ap.mobile_development_project.domain.City
 import edu.ap.mobile_development_project.enums.Category
 import edu.ap.mobile_development_project.composables.CameraPermissionContext
 import edu.ap.mobile_development_project.composables.LocationPermissionContext
 import edu.ap.mobile_development_project.composables.ImageContainer
+import edu.ap.mobile_development_project.viewModels.CitiesViewModel
+import edu.ap.mobile_development_project.viewModels.MapViewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -70,7 +73,9 @@ fun AddPoIScreen(
     navController: NavHostController,
     onAddPoI: (PointOfInterest) -> Unit,
     categories: List<Category>,
-    fusedLocationClient: FusedLocationProviderClient
+    fusedLocationClient: FusedLocationProviderClient,
+    mapViewModel: MapViewModel,
+    citiesViewModel: CitiesViewModel
 ) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -105,6 +110,7 @@ fun AddPoIScreen(
                 location?.let {
                     lat = location.latitude
                     long = location.longitude
+                    mapViewModel.getReverse(lat, long)
                 }
             }
             .addOnFailureListener { exception ->
@@ -208,6 +214,12 @@ fun AddPoIScreen(
                             if (capturedImageUri == Uri.EMPTY || name == "" || description == "" || selectedCategories.isEmpty()) {
                                 return@Button;
                             }
+                            val city =
+                                mapViewModel.reverseEntry?.address?.city ?: "unknown city"
+
+                            val cityId = citiesViewModel.cities.value.find { it.name == city }?.id ?:
+                                citiesViewModel.addCity(City(city))
+
                             val image = Base64.encode(file.readBytes())
                             onAddPoI(
                                 PointOfInterest(
@@ -216,7 +228,7 @@ fun AddPoIScreen(
                                     long,
                                     image,
                                     selectedCategories,
-                                    "-OfTQbH99gVHScu9Vxxr"
+                                    cityId
                                 )
                             )
                         }) {

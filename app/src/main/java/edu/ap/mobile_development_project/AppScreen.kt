@@ -42,6 +42,7 @@ import edu.ap.mobile_development_project.domain.PointOfInterest
 import edu.ap.mobile_development_project.screens.PointOfInterestOverview
 import edu.ap.mobile_development_project.viewModels.AuthViewModel
 import edu.ap.mobile_development_project.viewModels.CitiesViewModel
+import edu.ap.mobile_development_project.viewModels.MapViewModel
 import edu.ap.mobile_development_project.viewModels.PoIViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -103,6 +104,7 @@ fun App(
     authViewModel: AuthViewModel,
     citiesViewModel: CitiesViewModel,
     poiViewModel: PoIViewModel,
+    mapViewModel: MapViewModel,
     fusedLocationClient: FusedLocationProviderClient,
     navController: NavHostController = rememberNavController()
 ) {
@@ -242,7 +244,9 @@ fun App(
                         navController = navController,
                         onAddPoI = { poi -> poiViewModel.addPoI(poi) },
                         categories = listOf(Category.Cafe, Category.Museum),
-                        fusedLocationClient = fusedLocationClient
+                        fusedLocationClient = fusedLocationClient,
+                        mapViewModel = mapViewModel,
+                        citiesViewModel = citiesViewModel
                     )
                 }
             }
