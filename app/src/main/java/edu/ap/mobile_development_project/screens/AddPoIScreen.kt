@@ -19,7 +19,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -69,8 +71,7 @@ import kotlin.io.encoding.Base64
 fun AddPoIScreen(
     navController: NavHostController,
     onAddPoI: (PointOfInterest) -> Unit,
-    categories: List<Category>,
-    modifier: Modifier
+    categories: List<Category>
 ) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -98,7 +99,7 @@ fun AddPoIScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             Column(
-                modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text("Name", style = MaterialTheme.typography.headlineSmall)
                 TextField(
@@ -188,7 +189,6 @@ fun AddPoIScreen(
                         if (capturedImageUri == Uri.EMPTY || name == "" || description == "" || selectedCategories.isEmpty()) {
                             return@Button;
                         }
-                        val file = File(capturedImageUri.path)
                         val image = Base64.encode(file.readBytes())
                         onAddPoI(
                             PointOfInterest(
@@ -277,7 +277,6 @@ fun AddPoIScreenPreview() {
     AddPoIScreen(
         navController = NavHostController(LocalContext.current),
         onAddPoI = {},
-        categories = listOf(Category.Cafe, Category.Museum),
-        modifier = Modifier,
+        categories = listOf(Category.Cafe, Category.Museum)
     )
 }

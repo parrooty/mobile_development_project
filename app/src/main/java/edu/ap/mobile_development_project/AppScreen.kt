@@ -239,8 +239,7 @@ fun App(
                     AddPoIScreen(
                         navController = navController,
                         onAddPoI = { poi -> poiViewModel.addPoI(poi) },
-                        categories = listOf(Category.Cafe, Category.Museum),
-                        modifier = Modifier
+                        categories = listOf(Category.Cafe, Category.Museum)
                     )
                 }
             }
