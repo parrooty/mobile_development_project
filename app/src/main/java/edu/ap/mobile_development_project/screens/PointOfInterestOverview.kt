@@ -56,6 +56,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import edu.ap.mobile_development_project.Map
 import edu.ap.mobile_development_project.domain.PointOfInterest
+import edu.ap.mobile_development_project.domain.Rating
 import edu.ap.mobile_development_project.enums.Category
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -390,6 +391,7 @@ fun PointOfInterestListPreview(
     val scrollState = rememberScrollState()
     val pointsOfInterest = listOf<PointOfInterest>(
         PointOfInterest(
+            "asdfadsfadsf",
             "Point of Interest 1",
             1.0,
             1.0,
@@ -398,9 +400,17 @@ fun PointOfInterestListPreview(
                 Category.Cafe,
                 Category.Museum
             ),
+            listOf(
+                Rating(
+                    5,
+                    "asdfadsfadsf",
+                    "1"
+                )
+            ),
             "1"
         ),
         PointOfInterest(
+            "agrgthggag",
             "Point of Interest 2",
             2.0,
             2.0,
@@ -408,12 +418,20 @@ fun PointOfInterestListPreview(
             listOf(
                 Category.Cafe,
             ),
+            listOf(
+                Rating(
+                    5,
+                    "asdfadsfadsf",
+                    "1"
+                )
+            ),
             "1"
         )
     )
     PointOfInterestList(
         pointsOfInterest = pointsOfInterest,
         modifier = Modifier,
-        openRatingDialog = remember { mutableStateOf(false) }
+        openRatingDialog = remember { mutableStateOf(false) },
+        selectedPOIId = remember { mutableStateOf<String?>(null) }
     )
 }

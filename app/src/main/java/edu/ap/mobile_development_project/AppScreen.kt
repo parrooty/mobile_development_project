@@ -38,6 +38,7 @@ import edu.ap.mobile_development_project.screens.AddPoIScreen
 import edu.ap.mobile_development_project.screens.LoginScreen
 import edu.ap.mobile_development_project.screens.CityOverviewScreen
 import edu.ap.mobile_development_project.domain.PointOfInterest
+import edu.ap.mobile_development_project.domain.Rating
 import edu.ap.mobile_development_project.screens.PointOfInterestOverview
 import edu.ap.mobile_development_project.viewModels.AuthViewModel
 import edu.ap.mobile_development_project.viewModels.CitiesViewModel
@@ -203,6 +204,7 @@ fun App(
                     PointOfInterestOverview(
                         pointsOfInterest = listOf(
                             PointOfInterest(
+                                "afaskhaoifu",
                                 "Point of Interest 1",
                                 1.0,
                                 1.0,
@@ -210,8 +212,17 @@ fun App(
                                 listOf(
                                     Category.Cafe,
                                 ),
+                                listOf(
+                                    Rating(
+                                        "oufhenef",
+                                        5,
+                                        "asdfadsfadsf",
+                                        "1"
+                                    )
+                                ),
                                 "1"
                             ),PointOfInterest(
+                                "i8egweiodvh",
                                 "Point of Interest 2",
                                 1.0,
                                 1.0,
@@ -219,14 +230,31 @@ fun App(
                                 listOf(
                                     Category.Cafe,
                                 ),
+                                listOf(
+                                    Rating(
+                                        "aieurfnoe",
+                                        5,
+                                        "asdfadsfadsf",
+                                        "1"
+                                    )
+                                ),
                                 "1"
                             ),PointOfInterest(
+                                "iuebnlviesufef",
                                 "Point of Interest 3",
                                 1.0,
                                 1.0,
                                 "image",
                                 listOf(
                                     Category.Cafe,
+                                ),
+                                listOf(
+                                    Rating(
+                                        "fiueyfuhlkse",
+                                        4,
+                                        "ousehfsieulf",
+                                        "1"
+                                    )
                                 ),
                                 "1"
                             )

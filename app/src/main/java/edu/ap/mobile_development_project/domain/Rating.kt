@@ -11,7 +11,7 @@ class Rating {
 
     constructor()
 
-    constructor(rating: Int, pointOfInterestId: String, userId: String) {
+    constructor(id: String,rating: Int, pointOfInterestId: String, userId: String) {
         this.rating = rating
         this.pointOfInterestId = pointOfInterestId
         this.userId = userId
