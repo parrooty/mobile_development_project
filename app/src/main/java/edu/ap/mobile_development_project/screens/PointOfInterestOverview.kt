@@ -35,6 +35,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -53,11 +54,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.os.bundleOf
 import androidx.navigation.NavHostController
 import edu.ap.mobile_development_project.Map
+import edu.ap.mobile_development_project.Screen
 import edu.ap.mobile_development_project.domain.PointOfInterest
 import edu.ap.mobile_development_project.domain.Rating
 import edu.ap.mobile_development_project.enums.Category
+import edu.ap.mobile_development_project.viewModels.AuthViewModel
+import edu.ap.mobile_development_project.viewModels.PoIViewModel
+import edu.ap.mobile_development_project.viewModels.RatingViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -65,10 +71,13 @@ import kotlinx.coroutines.launch
 fun PointOfInterestOverview(
     pointsOfInterest: List<PointOfInterest>,
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    poiViewModel: PoIViewModel,
+    authViewModel: AuthViewModel,
+    modifier: Modifier = Modifier,
 ) {
     val openRatingDialog = remember { mutableStateOf(false) }
     val selectedPOIId = remember { mutableStateOf<String?>(null) }
+    val rating = remember { mutableIntStateOf(0) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
@@ -79,27 +88,42 @@ fun PointOfInterestOverview(
             )
             PointOfInterestList(
                 pointsOfInterest = pointsOfInterest,
+                navController = navController,
+                poiViewModel = poiViewModel,
+                authViewModel = authViewModel,
                 modifier = modifier.fillMaxHeight(),
                 openRatingDialog = openRatingDialog,
-                selectedPOIId = selectedPOIId
+                selectedPOIId = selectedPOIId,
+                rating = rating
             )
         }
     }
     if (openRatingDialog.value) RatingWindow(
         onDismissRequest = { openRatingDialog.value = false },
-        onConfirmation = { openRatingDialog.value = false },
+        onConfirmation = { openRatingDialog.value = false; poiViewModel.addRating(
+            Rating(
+                rating = rating.intValue,
+                pointOfInterestId = selectedPOIId.value.toString(),
+                userId = authViewModel.currentUser.value?.uid.toString()
+            )
+        ) },
         dialogTitle = "Rate Point of Interest",
-        dialogText = "Please rate the point of interest"
+        dialogText = "Please rate the point of interest",
+        rating = rating
     )
 }
 
 @Composable
 fun PointOfInterestList(
     pointsOfInterest: List<PointOfInterest>,
+    navController: NavHostController,
+    poiViewModel: PoIViewModel,
+    authViewModel: AuthViewModel,
     scope: CoroutineScope = rememberCoroutineScope(),
     modifier: Modifier,
     openRatingDialog: MutableState<Boolean>,
-    selectedPOIId: MutableState<String?>
+    selectedPOIId: MutableState<String?>,
+    rating: MutableIntState
 ) {
     val scrollState = rememberScrollState()
     var selectedCategories by remember { mutableStateOf<Set<Category>>(emptySet()) }
@@ -163,9 +187,13 @@ fun PointOfInterestList(
             filteredPointsOfInterest.forEach { pointOfInterest ->
                 PointOfInterestItem(
                     pointOfInterest = pointOfInterest,
+                    navController = navController,
                     modifier = Modifier.height(20.dp),
                     openRatingDialog = openRatingDialog,
-                    selectedPOIId = selectedPOIId
+                    poiViewModel = poiViewModel,
+                    authViewModel = authViewModel,
+                    selectedPOIId = selectedPOIId,
+                    rating = rating
                 )
                 Spacer(modifier = Modifier.height(10.dp))
             }
@@ -194,9 +222,13 @@ fun PointOfInterestList(
 @Composable
 fun PointOfInterestItem(
     pointOfInterest: PointOfInterest,
+    navController: NavHostController,
     modifier: Modifier,
     openRatingDialog: MutableState<Boolean>,
-    selectedPOIId: MutableState<String?>
+    poiViewModel: PoIViewModel,
+    authViewModel: AuthViewModel,
+    selectedPOIId: MutableState<String?>,
+    rating: MutableIntState
 ) {
     var imageBytes: ByteArray? = null;
 
@@ -209,8 +241,15 @@ fun PointOfInterestItem(
         )
     }
 
+    val ratings = pointOfInterest.ratings
+    val averageRating = if (ratings.isNotEmpty()) ratings.map { it.rating }.average() else 0.0
+    val ratingCount = ratings.size
+
     Card(
-        modifier = Modifier
+        modifier = Modifier,
+        onClick = {
+            navController.navigate(Screen.CommentScreen.name + "/${pointOfInterest.id}")
+        }
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -275,16 +314,20 @@ fun PointOfInterestItem(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Button(
-                        onClick = { openRatingDialog.value = true; selectedPOIId.value = pointOfInterest.id },
+                        onClick = { rating.intValue = 0; openRatingDialog.value = true; selectedPOIId.value = pointOfInterest.id },
                     ) {
                         Text(
-                            text = "Review: 4.7"
+                            text = if (ratingCount > 0) "Rating: ".format(averageRating) else "Unreviewed"
                         )
                         Icon(
                             imageVector = Icons.Filled.Star,
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
                             tint = Color.hsl(54f, 0.89f, 0.50f)
+                        )
+                        Text(
+                            // show all ratings value for this poi
+                            text = if (ratingCount > 0) "%.1f (%d)".format(averageRating, ratingCount) else ""
                         )
                     }
                 }
@@ -325,10 +368,8 @@ fun RatingWindow(
     onConfirmation: () -> Unit,
     dialogTitle: String,
     dialogText: String,
-    pointOfInterestId: String? = null
+    rating: MutableIntState
 ) {
-    var rating by remember { mutableIntStateOf(0) }
-
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -359,12 +400,12 @@ fun RatingWindow(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(0.dp),
                             onClick = {
-                                rating = i
+                                rating.intValue = i
                             }) {
                             Icon(
-                                imageVector = if (i <= rating) Icons.Filled.Star else Icons.Outlined.StarOutline,
+                                imageVector = if (i <= rating.intValue) Icons.Filled.Star else Icons.Outlined.StarOutline,
                                 contentDescription = "Star $i",
-                                tint = if (i <= rating) Color.hsl(54f, 0.89f, 0.50f) else Color.Gray,
+                                tint = if (i <= rating.intValue) Color.hsl(54f, 0.89f, 0.50f) else Color.Gray,
                                 modifier = Modifier.size(32.dp),
                             )
                         }
@@ -381,60 +422,4 @@ fun RatingWindow(
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun PointOfInterestListPreview(
-    scope: CoroutineScope = rememberCoroutineScope()
-) {
-    val scrollState = rememberScrollState()
-    val pointsOfInterest = listOf<PointOfInterest>(
-        PointOfInterest(
-            "asdfadsfadsf",
-            "Point of Interest 1",
-            "Description",
-
-            1.0,
-            1.0,
-            "iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAADMElEQVR4nOzVwQnAIBQFQYXff81RUkQCOyDj1YOPnbXWPmeTRef+/3O/OyBjzh3CD95BfqICMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMO0TAAD//2Anhf4QtqobAAAAAElFTkSuQmCC",
-            listOf(
-                Category.Cafe,
-                Category.Museum
-            ),
-            listOf(
-                Rating(
-                    5,
-                    "asdfadsfadsf",
-                    "1"
-                )
-            ),
-            "1"
-        ),
-        PointOfInterest(
-            "agrgthggag",
-            "Point of Interest 2",
-            "Description",
-            2.0,
-            2.0,
-            "iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAADMElEQVR4nOzVwQnAIBQFQYXff81RUkQCOyDj1YOPnbXWPmeTRef+/3O/OyBjzh3CD95BfqICMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMO0TAAD//2Anhf4QtqobAAAAAElFTkSuQmCC",
-            listOf(
-                Category.Cafe,
-            ),
-            listOf(
-                Rating(
-                    5,
-                    "asdfadsfadsf",
-                    "1"
-                )
-            ),
-            "1"
-        )
-    )
-    PointOfInterestList(
-        pointsOfInterest = pointsOfInterest,
-        modifier = Modifier,
-        openRatingDialog = remember { mutableStateOf(false) },
-        selectedPOIId = remember { mutableStateOf<String?>(null) }
-    )
 }

@@ -3,33 +3,33 @@ package edu.ap.mobile_development_project.domain
 import com.google.firebase.database.IgnoreExtraProperties
 
 @IgnoreExtraProperties
-class Rating {
+class Comment {
     var id: String = ""
-    var rating: Int = 0
+    var comment: String = ""
     var pointOfInterestId: String = ""
     var userId: String = ""
 
     constructor()
 
-    constructor(id: String, rating: Int, pointOfInterestId: String, userId: String) {
+    constructor(id: String, comment: String, pointOfInterestId: String, userId: String) {
         this.id = id
-        this.rating = rating
+        this.comment = comment
         this.pointOfInterestId = pointOfInterestId
         this.userId = userId
     }
 
-    constructor(rating: Int, pointOfInterestId: String, userId: String) {
-        this.rating = rating
+    constructor(comment: String, pointOfInterestId: String, userId: String) {
+        this.comment = comment
         this.pointOfInterestId = pointOfInterestId
         this.userId = userId
     }
 
     fun copy(
         id: String = this.id,
-        rating: Int = this.rating,
+        comment: String = this.comment,
         pointOfInterestId: String = this.pointOfInterestId,
         userId: String = this.userId
-    ): Rating {
-        return Rating(id, rating, pointOfInterestId, userId)
+    ): Comment {
+        return Comment(id, comment, pointOfInterestId, userId)
     }
 }

@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import edu.ap.mobile_development_project.viewModels.PoIViewModel
 
 @Composable
 fun LoginScreen(
@@ -27,6 +28,7 @@ fun LoginScreen(
     onCreateAccount: (String, String) -> Unit,
     error: String?,
     clearError: () -> Unit,
+    poiViewModel: PoIViewModel,
     modifier: Modifier = Modifier
 ) {
     var email by remember { mutableStateOf("") }
@@ -50,7 +52,7 @@ fun LoginScreen(
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TextField(
             value = email,
@@ -68,7 +70,7 @@ fun LoginScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { onSignIn(email, password) },
+            onClick = { onSignIn(email, password); poiViewModel.refresh() },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Sign In")

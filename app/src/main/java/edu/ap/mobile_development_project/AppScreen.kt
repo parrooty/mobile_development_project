@@ -27,10 +27,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.google.android.gms.location.FusedLocationProviderClient
 import edu.ap.mobile_development_project.domain.City
 import edu.ap.mobile_development_project.enums.Category
@@ -40,6 +42,7 @@ import edu.ap.mobile_development_project.screens.LoginScreen
 import edu.ap.mobile_development_project.screens.CityOverviewScreen
 import edu.ap.mobile_development_project.domain.PointOfInterest
 import edu.ap.mobile_development_project.domain.Rating
+import edu.ap.mobile_development_project.screens.CommentScreen
 import edu.ap.mobile_development_project.screens.PointOfInterestOverview
 import edu.ap.mobile_development_project.viewModels.AuthViewModel
 import edu.ap.mobile_development_project.viewModels.CitiesViewModel
@@ -53,7 +56,8 @@ enum class Screen {
     Overview,
     AddCity,
     PointOfInterestOverview,
-    AddPointOfInterest
+    AddPointOfInterest,
+    CommentScreen
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -112,8 +116,9 @@ fun App(
     // Get current back stack entry
     val backStackEntry by navController.currentBackStackEntryAsState()
     // Get the name of the current screen
+    val currentRoute = backStackEntry?.destination?.route ?: Screen.Login.name
     val currentScreen = Screen.valueOf(
-        backStackEntry?.destination?.route ?: Screen.Login.name
+        currentRoute.substringBefore("/")
     )
 
     val currentUser by authViewModel.currentUser.collectAsState()
@@ -156,6 +161,7 @@ fun App(
                     navController.navigate(Screen.Overview.name) {
                         popUpTo(Screen.Login.name) { inclusive = true }
                     }
+                    poiViewModel.refresh()
                 } else {
                     navController.navigate(Screen.Login.name) {
                         popUpTo(Screen.Overview.name) { inclusive = true }
@@ -178,6 +184,7 @@ fun App(
                         },
                         error = error,
                         clearError = { authViewModel.clearError() },
+                        poiViewModel = poiViewModel,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -205,68 +212,12 @@ fun App(
                 }
 
                 composable(Screen.PointOfInterestOverview.name) {
+                    val pointsOfInterest by poiViewModel.pois.collectAsState()
                     PointOfInterestOverview(
-                        pointsOfInterest = listOf(
-                            PointOfInterest(
-                                "afaskhaoifu",
-                                "Point of Interest 1",
-                                "Description",
-                                1.0,
-                                1.0,
-                                "image",
-                                listOf(
-                                    Category.Cafe,
-                                ),
-                                listOf(
-                                    Rating(
-                                        "oufhenef",
-                                        5,
-                                        "asdfadsfadsf",
-                                        "1"
-                                    )
-                                ),
-                                "1"
-                            ),PointOfInterest(
-                                "i8egweiodvh",
-                                "Point of Interest 2",
-                                "Description",
-                                1.0,
-                                1.0,
-                                "image",
-                                listOf(
-                                    Category.Cafe,
-                                ),
-                                listOf(
-                                    Rating(
-                                        "aieurfnoe",
-                                        5,
-                                        "asdfadsfadsf",
-                                        "1"
-                                    )
-                                ),
-                                "1"
-                            ),PointOfInterest(
-                                "iuebnlviesufef",
-                                "Point of Interest 3",
-                                "Description",
-                                1.0,
-                                1.0,
-                                "image",
-                                listOf(
-                                    Category.Cafe,
-                                ),
-                                listOf(
-                                    Rating(
-                                        "fiueyfuhlkse",
-                                        4,
-                                        "ousehfsieulf",
-                                        "1"
-                                    )
-                                ),
-                                "1"
-                            )
-                        ),
-                        navController = navController
+                        pointsOfInterest = pointsOfInterest,
+                        navController = navController,
+                        poiViewModel = poiViewModel,
+                        authViewModel = authViewModel
                     )
                 }
 
@@ -279,6 +230,17 @@ fun App(
                         mapViewModel = mapViewModel,
                         citiesViewModel = citiesViewModel
                     )
+                }
+
+                composable(route = Screen.CommentScreen.name + "/{pointOfInterestId}", arguments = listOf(navArgument("pointOfInterestId") { type = NavType.StringType })) { backStackEntry ->
+                    val pointOfInterestId = backStackEntry.arguments?.getString("pointOfInterestId")
+                    if (pointOfInterestId != null) {
+                        CommentScreen(
+                            pointOfInterestId = pointOfInterestId,
+                            poiViewModel = poiViewModel,
+                            authViewModel = authViewModel
+                        )
+                    }
                 }
             }
         }

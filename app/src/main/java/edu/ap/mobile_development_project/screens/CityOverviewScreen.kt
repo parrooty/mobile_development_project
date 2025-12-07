@@ -111,7 +111,6 @@ fun CityItem(city: City, poiAmount: Int, modifier: Modifier) {
                 modifier = Modifier.padding(10.dp),
                 text = "$poiAmount point(s) of interest",
             )
-
         }
     }
 }
