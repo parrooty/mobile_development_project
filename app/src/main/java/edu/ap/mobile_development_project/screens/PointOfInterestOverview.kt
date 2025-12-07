@@ -78,16 +78,39 @@ fun PointOfInterestOverview(
     val openRatingDialog = remember { mutableStateOf(false) }
     val selectedPOIId = remember { mutableStateOf<String?>(null) }
     val rating = remember { mutableIntStateOf(0) }
+    var selectedCategories by remember { mutableStateOf<Set<Category>>(emptySet()) }
+
+    val filteredPointsOfInterest by remember(selectedCategories, pointsOfInterest) {
+        derivedStateOf {
+            if (selectedCategories.isEmpty()) {
+                pointsOfInterest
+            } else {
+                pointsOfInterest.filter { poi ->
+                    poi.categories.any { it in selectedCategories }
+                }
+            }
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
             Map(
+                filteredPointsOfInterest,
+                navController = navController,
                 modifier = Modifier
                     .height(300.dp)
                     .fillMaxWidth()
             )
             PointOfInterestList(
-                pointsOfInterest = pointsOfInterest,
+                pointsOfInterest = filteredPointsOfInterest,
+                selectedCategories = selectedCategories,
+                onCategorySelected = { category, isSelected ->
+                    selectedCategories = if (isSelected) {
+                        selectedCategories + category
+                    } else {
+                        selectedCategories - category
+                    }
+                },
                 navController = navController,
                 poiViewModel = poiViewModel,
                 authViewModel = authViewModel,
@@ -116,6 +139,8 @@ fun PointOfInterestOverview(
 @Composable
 fun PointOfInterestList(
     pointsOfInterest: List<PointOfInterest>,
+    selectedCategories: Set<Category>,
+    onCategorySelected: (Category, Boolean) -> Unit,
     navController: NavHostController,
     poiViewModel: PoIViewModel,
     authViewModel: AuthViewModel,
@@ -126,19 +151,6 @@ fun PointOfInterestList(
     rating: MutableIntState
 ) {
     val scrollState = rememberScrollState()
-    var selectedCategories by remember { mutableStateOf<Set<Category>>(emptySet()) }
-
-    val filteredPointsOfInterest by remember(selectedCategories, pointsOfInterest) {
-        derivedStateOf {
-            if (selectedCategories.isEmpty()) {
-                pointsOfInterest
-            } else {
-                pointsOfInterest.filter { poi ->
-                    poi.categories.any { it in selectedCategories }
-                }
-            }
-        }
-    }
 
     val (selectedChips, unselectedChips) = remember(selectedCategories) {
         Category.entries.partition { it in selectedCategories }
@@ -166,7 +178,7 @@ fun PointOfInterestList(
                             text = category.toString(),
                             selected = true,
                             onClick = {
-                                selectedCategories = selectedCategories - category
+                                onCategorySelected(category, false)
                             },
                             modifier = Modifier,
                         )
@@ -178,13 +190,13 @@ fun PointOfInterestList(
                         text = category.toString(),
                         selected = isSelected,
                         onClick = {
-                            selectedCategories += category
+                            onCategorySelected(category, true)
                         },
                         modifier = Modifier,
                     )
                 }
             }
-            filteredPointsOfInterest.forEach { pointOfInterest ->
+            pointsOfInterest.forEach { pointOfInterest ->
                 PointOfInterestItem(
                     pointOfInterest = pointOfInterest,
                     navController = navController,

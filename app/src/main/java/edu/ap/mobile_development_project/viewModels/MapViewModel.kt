@@ -19,7 +19,6 @@ class MapViewModel : ViewModel() {
 
     fun getAddress(address: String) {
         viewModelScope.launch {
-
 //           _entries = RetrofitClient.instance.getAddress(address, "json").execute().body()
 //           _firstAddress = _entries?.get(0) ?: Entry(0.0, 0.0)
         }
