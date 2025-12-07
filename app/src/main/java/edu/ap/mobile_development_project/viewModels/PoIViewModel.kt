@@ -128,50 +128,6 @@ class PoIViewModel : ViewModel() {
         commentsRef.addValueEventListener(commentsValueListener)
     }
 
-    private fun attachPoisListener() {
-        poiRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                allPois = snapshot.children.mapNotNull { it.getValue(PointOfInterest::class.java) }
-                poisReady = true
-                combineData()
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("PoIViewModel", "POIs Database Error", error.toException())
-            }
-        })
-    }
-
-    private fun attachRatingsListener() {
-        ratingsRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val ratings = snapshot.children.mapNotNull { it.getValue(Rating::class.java) }
-                allRatingsByPoiId = ratings.groupBy { it.pointOfInterestId }
-                ratingsReady = true
-                combineData()
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("PoIViewModel", "Ratings Database Error", error.toException())
-            }
-        })
-    }
-
-    private fun attachCommentsListener() {
-        commentsRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val comments = snapshot.children.mapNotNull { it.getValue(Comment::class.java) }
-                allCommentsByPoiId = comments.groupBy { it.pointOfInterestId }
-                commentsReady = true
-                combineData()
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.e("PoIViewModel", "Comments Database Error", error.toException())
-            }
-        })
-    }
-
     private fun combineData() {
         // --- FIX 2: Add a guard to ensure all data is ready before combining ---
         // This stops combineData from running with incomplete information.
