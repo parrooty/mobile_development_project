@@ -72,6 +72,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun PointOfInterestOverview(
+    userCity: String? = mapViewModel.reverseEntry?.address?.city ?: mapViewModel.reverseEntry?.address?.town,
     pointsOfInterest: List<PointOfInterest>,
     navController: NavHostController,
     poiViewModel: PoIViewModel,
@@ -84,7 +85,7 @@ fun PointOfInterestOverview(
     val selectedPOIId = remember { mutableStateOf<String?>(null) }
     val rating = remember { mutableIntStateOf(0) }
     var selectedCategories by remember { mutableStateOf<Set<Category>>(emptySet()) }
-    var currentCityOnly by remember { mutableStateOf(false) }
+    var currentCityOnly by remember { mutableStateOf(true) }
 
 //    val filteredPointsOfInterest by remember(selectedCategories, pointsOfInterest) {
 //        derivedStateOf {
@@ -115,7 +116,7 @@ fun PointOfInterestOverview(
             // Then, filter by city if the checkbox is ticked
             if (currentCityOnly) {
                 categoryFiltered.filter { poi ->
-                    val userCity = mapViewModel.reverseEntry?.address?.city ?: mapViewModel.reverseEntry?.address?.town
+//                    val userCity = mapViewModel.reverseEntry?.address?.city ?: mapViewModel.reverseEntry?.address?.town
                     val poiCity = citiesViewModel.getCityById(poi.cityId)?.name
                     // Only keep the POI if both cities are known and they match
                     userCity != null && poiCity != null && userCity == poiCity
@@ -137,24 +138,28 @@ fun PointOfInterestOverview(
                     .height(300.dp)
                     .fillMaxWidth()
             )
-            Checkbox(
-                currentCityOnly,
-                onCheckedChange = {
-                    currentCityOnly = it
-                }
-            )
-            val debugText = "Debug: ${mapViewModel.reverseEntry.toString()}"
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Checkbox(
+                    currentCityOnly,
+                    onCheckedChange = {
+                        currentCityOnly = it
+                    },
+                )
+    //            val debugText = "Debug: ${mapViewModel.reverseEntry.toString()}"
 
-// Display the debug text on the screen
-            Text(text = debugText)
-            val cityText = if (mapViewModel.reverseEntry?.address?.city != null) {
-                "Only show results in: ${mapViewModel.reverseEntry?.address?.city.toString()}"
-            } else if (mapViewModel.reverseEntry?.address?.town != null) {
-                "Only show results in: ${mapViewModel.reverseEntry?.address?.town.toString()}"
-            } else {
-                "Finding your current city..."
+    // Display the debug text on the screen
+//                Text(text = debugText)
+//                val cityText = if (mapViewModel.reverseEntry?.address?.city != null) {
+//                    "Only show results in: ${mapViewModel.reverseEntry?.address?.city.toString()}"
+//                } else if (mapViewModel.reverseEntry?.address?.town != null) {
+//                    "Only show results in: ${mapViewModel.reverseEntry?.address?.town.toString()}"
+//                } else {
+//                    "Finding your current city..."
+//                }
+                Text(text = userCity.toString())
             }
-            Text(text = cityText)
             PointOfInterestList(
                 pointsOfInterest = filteredPointsOfInterest,
                 selectedCategories = selectedCategories,

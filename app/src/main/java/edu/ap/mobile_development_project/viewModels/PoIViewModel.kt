@@ -173,6 +173,10 @@ class PoIViewModel : ViewModel() {
         db.child("pois").child(key).setValue(poi)
     }
 
+    fun getPoIAmountByCityId(cityId: String): Int {
+        return allPois.count { it.cityId == cityId }
+    }
+
     fun addRating(rating: Rating) {
         val query = ratingsRef
             .orderByChild("pointOfInterestId")

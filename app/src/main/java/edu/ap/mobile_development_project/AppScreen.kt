@@ -118,7 +118,7 @@ fun App(
     // Get the name of the current screen
     val currentRoute = backStackEntry?.destination?.route ?: Screen.Login.name
     val currentScreen = Screen.valueOf(
-        currentRoute.substringBefore("/")
+        currentRoute.substringBefore("?").substringBefore("/")
     )
 
     val currentUser by authViewModel.currentUser.collectAsState()
@@ -149,7 +149,8 @@ fun App(
         Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
             AppBar(
                 currentScreen = currentScreen,
-                canNavigateBack = navController.previousBackStackEntry != null,
+//                canNavigateBack = navController.previousBackStackEntry != null,
+                canNavigateBack = false,
                 navigateUp = { navController.navigateUp() },
                 drawerState = drawerState,
                 scope = scope
@@ -194,6 +195,7 @@ fun App(
                     CityOverviewScreen(
                         cities = cities,
                         navController = navController,
+                        poiViewModel = poiViewModel,
                     )
                 }
 
@@ -211,9 +213,18 @@ fun App(
                     )
                 }
 
-                composable(Screen.PointOfInterestOverview.name) {
+                composable(
+                    Screen.PointOfInterestOverview.name + "?userCity={userCity}",
+                    arguments = listOf(navArgument("userCity") {
+                        type = NavType.StringType
+                        nullable = true
+                    })
+                ) {
+                    val userCity = it.arguments?.getString("userCity") ?: (mapViewModel.reverseEntry?.address?.city
+                    ?: mapViewModel.reverseEntry?.address?.town)
                     val pointsOfInterest by poiViewModel.pois.collectAsState()
                     PointOfInterestOverview(
+                        userCity = userCity,
                         pointsOfInterest = pointsOfInterest,
                         navController = navController,
                         poiViewModel = poiViewModel,
@@ -234,7 +245,12 @@ fun App(
                     )
                 }
 
-                composable(route = Screen.CommentScreen.name + "/{pointOfInterestId}", arguments = listOf(navArgument("pointOfInterestId") { type = NavType.StringType })) { backStackEntry ->
+                composable(
+                    route = Screen.CommentScreen.name + "/{pointOfInterestId}",
+                    arguments = listOf(navArgument("pointOfInterestId") {
+                        type = NavType.StringType
+                    })
+                ) { backStackEntry ->
                     val pointOfInterestId = backStackEntry.arguments?.getString("pointOfInterestId")
                     if (pointOfInterestId != null) {
                         CommentScreen(

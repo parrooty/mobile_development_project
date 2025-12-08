@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -33,16 +34,17 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import edu.ap.mobile_development_project.Screen
 import edu.ap.mobile_development_project.domain.City
+import edu.ap.mobile_development_project.viewModels.PoIViewModel
 
 @Composable
 fun CityOverviewScreen(
     cities: List<City>,
     navController: NavHostController,
+    poiViewModel: PoIViewModel,
     modifier: Modifier = Modifier
 ) {
     var searchText by remember { mutableStateOf("") }
     var filter by remember { mutableStateOf("") }
-
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column() {
@@ -63,7 +65,12 @@ fun CityOverviewScreen(
                     Text("Search")
                 }
             }
-            CityList(cities = cities.filter { it.name.lowercase().contains(filter.lowercase()) }, modifier = modifier.fillMaxHeight())
+            CityList(
+                cities = cities.filter { it.name.lowercase().contains(filter.lowercase()) },
+                navController = navController,
+                poiViewModel = poiViewModel,
+                modifier = modifier.fillMaxHeight()
+            )
         }
 
         FloatingActionButton(
@@ -77,25 +84,38 @@ fun CityOverviewScreen(
 }
 
 @Composable
-fun CityList(cities: List<City>, modifier: Modifier) {
+fun CityList(
+    cities: List<City>,
+    navController: NavHostController,
+    poiViewModel: PoIViewModel,
+    modifier: Modifier
+) {
     Column(
         modifier = modifier
             .fillMaxHeight()
             .verticalScroll(rememberScrollState())
     ) {
         cities.forEach { city ->
-            CityItem(city = city, 0, modifier = Modifier)
+            CityItem(
+                city = city,
+                poiAmount = poiViewModel.getPoIAmountByCityId(city.id),
+                navController = navController,
+                modifier = Modifier
+            )
         }
     }
 }
 
 @Composable
-fun CityItem(city: City, poiAmount: Int, modifier: Modifier) {
+fun CityItem(city: City, poiAmount: Int, navController: NavHostController, modifier: Modifier) {
     Card(
         modifier = Modifier
             .padding(10.dp)
             .height(80.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        onClick = {
+            navController.navigate(Screen.PointOfInterestOverview.name + "?userCity=${city.name}")
+        }
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -115,15 +135,15 @@ fun CityItem(city: City, poiAmount: Int, modifier: Modifier) {
     }
 }
 
-@Preview
-@Composable
-fun OverviewScreenPreview() {
-    val cities = listOf<City>(
-        City("City1"),
-        City("City2"),
-        City("City3"),
-        City("City4"),
-        City("City5")
-    )
-    CityList(cities = cities, modifier = Modifier.fillMaxHeight())
-}
+//@Preview
+//@Composable
+//fun OverviewScreenPreview() {
+//    val cities = listOf<City>(
+//        City("City1"),
+//        City("City2"),
+//        City("City3"),
+//        City("City4"),
+//        City("City5")
+//    )
+//    CityList(cities = cities, navController = NavHostController(LocalContext.current), poiViewModel = PoIViewModel(), modifier = Modifier.fillMaxHeight())
+//}
