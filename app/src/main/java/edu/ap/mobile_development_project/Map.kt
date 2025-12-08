@@ -16,6 +16,8 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
@@ -23,6 +25,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.ktx.model.cameraPosition
 import edu.ap.mobile_development_project.domain.PointOfInterest
 import edu.ap.mobile_development_project.viewModels.MapViewModel
 import kotlinx.coroutines.tasks.await
@@ -43,6 +46,7 @@ fun Map(
         )
     )
     val context = LocalContext.current
+    val cameraPositionState = rememberCameraPositionState()
 
     if (locationPermissionsState.allPermissionsGranted) {
         LaunchedEffect(Unit) {
@@ -51,8 +55,15 @@ fun Map(
                 // Use .await() to safely get the location in a coroutine
                 val location = fusedLocationClient.lastLocation.await()
                 if (location != null) {
+                    val userLatLng = LatLng(location.latitude, location.longitude)
                     // We have the location, now tell the ViewModel to find the city
                     mapViewModel.getReverse(location.latitude, location.longitude)
+                    cameraPositionState.animate(
+                        update = CameraUpdateFactory.newCameraPosition(
+                            CameraPosition(userLatLng, 15f, 0f, 0f)
+                        ),
+                        durationMs = 1000
+                    )
                 }
             } catch (e: Exception) {
                 // Handle cases where location is not available
@@ -61,7 +72,7 @@ fun Map(
         }
         // This manages the current camera position, which includes: LatLng (center of the map),
         // zoom level, bearing (rotation) & tilt (3D perspective).
-        val cameraPositionState = rememberCameraPositionState()
+//        val cameraPositionState = rememberCameraPositionState()
 
         GoogleMap(
             // Modifier defines how the map should be laid out in the UI.
