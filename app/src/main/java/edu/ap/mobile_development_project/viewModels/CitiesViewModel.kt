@@ -75,4 +75,8 @@ class CitiesViewModel : ViewModel() {
         db.child("cities").child(key).setValue(city)
         return key
     }
+
+    fun getCityById(id: String): City? {
+        return _cities.value.find { it.id == id }
+    }
 }

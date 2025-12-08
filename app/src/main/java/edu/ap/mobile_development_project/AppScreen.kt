@@ -217,7 +217,9 @@ fun App(
                         pointsOfInterest = pointsOfInterest,
                         navController = navController,
                         poiViewModel = poiViewModel,
-                        authViewModel = authViewModel
+                        authViewModel = authViewModel,
+                        mapViewModel = mapViewModel,
+                        citiesViewModel = citiesViewModel
                     )
                 }
 

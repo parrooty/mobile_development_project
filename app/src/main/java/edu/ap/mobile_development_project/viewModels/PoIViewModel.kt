@@ -165,7 +165,6 @@ class PoIViewModel : ViewModel() {
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = null
         )
-
     }
 
     fun addPoI(poi: PointOfInterest) {

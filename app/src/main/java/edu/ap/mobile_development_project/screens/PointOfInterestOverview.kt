@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -62,6 +63,8 @@ import edu.ap.mobile_development_project.domain.PointOfInterest
 import edu.ap.mobile_development_project.domain.Rating
 import edu.ap.mobile_development_project.enums.Category
 import edu.ap.mobile_development_project.viewModels.AuthViewModel
+import edu.ap.mobile_development_project.viewModels.CitiesViewModel
+import edu.ap.mobile_development_project.viewModels.MapViewModel
 import edu.ap.mobile_development_project.viewModels.PoIViewModel
 import edu.ap.mobile_development_project.viewModels.RatingViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -73,21 +76,53 @@ fun PointOfInterestOverview(
     navController: NavHostController,
     poiViewModel: PoIViewModel,
     authViewModel: AuthViewModel,
+    mapViewModel: MapViewModel,
+    citiesViewModel: CitiesViewModel,
     modifier: Modifier = Modifier,
 ) {
     val openRatingDialog = remember { mutableStateOf(false) }
     val selectedPOIId = remember { mutableStateOf<String?>(null) }
     val rating = remember { mutableIntStateOf(0) }
     var selectedCategories by remember { mutableStateOf<Set<Category>>(emptySet()) }
+    var currentCityOnly by remember { mutableStateOf(false) }
 
-    val filteredPointsOfInterest by remember(selectedCategories, pointsOfInterest) {
+//    val filteredPointsOfInterest by remember(selectedCategories, pointsOfInterest) {
+//        derivedStateOf {
+//            if (selectedCategories.isEmpty()) {
+//                pointsOfInterest
+//            } else {
+//                pointsOfInterest.filter { poi ->
+//                    poi.categories.any { it in selectedCategories }
+//                }
+//            }
+//        }
+//    }
+
+    val filteredPointsOfInterest by remember(selectedCategories, pointsOfInterest, currentCityOnly, mapViewModel.reverseEntry) {
         derivedStateOf {
-            if (selectedCategories.isEmpty()) {
-                pointsOfInterest
+            // Start with the base list
+            val baseList = pointsOfInterest
+
+            // First, filter by category if any are selected
+            val categoryFiltered = if (selectedCategories.isEmpty()) {
+                baseList
             } else {
-                pointsOfInterest.filter { poi ->
+                baseList.filter { poi ->
                     poi.categories.any { it in selectedCategories }
                 }
+            }
+
+            // Then, filter by city if the checkbox is ticked
+            if (currentCityOnly) {
+                categoryFiltered.filter { poi ->
+                    val userCity = mapViewModel.reverseEntry?.address?.city ?: mapViewModel.reverseEntry?.address?.town
+                    val poiCity = citiesViewModel.getCityById(poi.cityId)?.name
+                    // Only keep the POI if both cities are known and they match
+                    userCity != null && poiCity != null && userCity == poiCity
+                }
+            } else {
+                // If not filtering by city, return the category-filtered list
+                categoryFiltered
             }
         }
     }
@@ -97,10 +132,29 @@ fun PointOfInterestOverview(
             Map(
                 filteredPointsOfInterest,
                 navController = navController,
+                mapViewModel = mapViewModel,
                 modifier = Modifier
                     .height(300.dp)
                     .fillMaxWidth()
             )
+            Checkbox(
+                currentCityOnly,
+                onCheckedChange = {
+                    currentCityOnly = it
+                }
+            )
+            val debugText = "Debug: ${mapViewModel.reverseEntry.toString()}"
+
+// Display the debug text on the screen
+            Text(text = debugText)
+            val cityText = if (mapViewModel.reverseEntry?.address?.city != null) {
+                "Only show results in: ${mapViewModel.reverseEntry?.address?.city.toString()}"
+            } else if (mapViewModel.reverseEntry?.address?.town != null) {
+                "Only show results in: ${mapViewModel.reverseEntry?.address?.town.toString()}"
+            } else {
+                "Finding your current city..."
+            }
+            Text(text = cityText)
             PointOfInterestList(
                 pointsOfInterest = filteredPointsOfInterest,
                 selectedCategories = selectedCategories,

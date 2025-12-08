@@ -1,5 +1,8 @@
 package edu.ap.mobile_development_project.viewModels
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import edu.ap.mobile_development_project.retrofit.ReverseEntry
@@ -13,8 +16,11 @@ class MapViewModel : ViewModel() {
     private var _entries : List<Entry>? = null
     private var _firstAddress: Entry? = null
     val firstAddress get() = _firstAddress
-    private var _reverseEntry: ReverseEntry? = null
-    val reverseEntry get() = _reverseEntry
+//    private var _reverseEntry: ReverseEntry? = null
+//    val reverseEntry get() = _reverseEntry
+
+    var reverseEntry: ReverseEntry? by mutableStateOf(null)
+        private set
 
 
     fun getAddress(address: String) {
@@ -28,7 +34,7 @@ class MapViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val result = RetrofitClient.instance.getReverse(lat, lon, "json")
-                _reverseEntry = result
+                reverseEntry = result
             } catch (e: Exception) {
                 e.printStackTrace()
             }

@@ -3,6 +3,7 @@ package edu.ap.mobile_development_project
 
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -10,9 +11,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
@@ -21,12 +24,16 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import edu.ap.mobile_development_project.domain.PointOfInterest
+import edu.ap.mobile_development_project.viewModels.MapViewModel
+import kotlinx.coroutines.tasks.await
 
 @OptIn(ExperimentalPermissionsApi::class)
+@SuppressLint("MissingPermission")
 @Composable
 fun Map(
     pointsOfInterest: List<PointOfInterest> = emptyList(),
     navController: NavHostController,
+    mapViewModel: MapViewModel,
     modifier: Modifier
 ) {
     val locationPermissionsState = rememberMultiplePermissionsState(
@@ -35,8 +42,23 @@ fun Map(
             ACCESS_FINE_LOCATION,
         )
     )
+    val context = LocalContext.current
 
     if (locationPermissionsState.allPermissionsGranted) {
+        LaunchedEffect(Unit) {
+            try {
+                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+                // Use .await() to safely get the location in a coroutine
+                val location = fusedLocationClient.lastLocation.await()
+                if (location != null) {
+                    // We have the location, now tell the ViewModel to find the city
+                    mapViewModel.getReverse(location.latitude, location.longitude)
+                }
+            } catch (e: Exception) {
+                // Handle cases where location is not available
+                e.printStackTrace()
+            }
+        }
         // This manages the current camera position, which includes: LatLng (center of the map),
         // zoom level, bearing (rotation) & tilt (3D perspective).
         val cameraPositionState = rememberCameraPositionState()

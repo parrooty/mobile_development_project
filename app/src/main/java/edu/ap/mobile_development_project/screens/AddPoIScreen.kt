@@ -87,16 +87,11 @@ fun AddPoIScreen(
     var long by remember { mutableDoubleStateOf(0.0) }
     var error by remember { mutableStateOf<String?>(null) }
 
-
-
-
     val context = LocalContext.current
     val file = context.createImageFile()
     val uri = FileProvider.getUriForFile(
         Objects.requireNonNull(context), BuildConfig.APPLICATION_ID + ".provider", file
     )
-
-
 
     var capturedImageUri by remember {
         mutableStateOf<Uri>(Uri.EMPTY)
@@ -234,9 +229,18 @@ fun AddPoIScreen(
                             }
                             val city =
                                 mapViewModel.reverseEntry?.address?.city ?: "unknown city"
+                            val town = mapViewModel.reverseEntry?.address?.town ?: "unknown city"
 
                             val cityId = citiesViewModel.cities.value.find { it.name == city }?.id ?:
                                 citiesViewModel.addCity(City(city))
+                            val townId = citiesViewModel.cities.value.find { it.name == town }?.id ?:
+                                citiesViewModel.addCity(City(town))
+
+                            val eventualId = if (city == "unknown city") {
+                                townId
+                            } else {
+                                cityId
+                            }
 
                             val image = Base64.encode(file.readBytes())
                             onAddPoI(
@@ -247,7 +251,7 @@ fun AddPoIScreen(
                                     long,
                                     image,
                                     selectedCategories,
-                                    cityId
+                                    eventualId
                                 )
                             )
                             navController.popBackStack()
@@ -272,7 +276,6 @@ fun AddPoIScreen(
         }
     }
 }
-
 
 fun Context.createImageFile(): File {
     // Create an image file name
