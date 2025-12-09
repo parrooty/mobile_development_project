@@ -238,7 +238,25 @@ fun App(
                     AddPoIScreen(
                         navController = navController,
                         onAddPoI = { poi -> poiViewModel.addPoI(poi) },
-                        categories = listOf(Category.Cafe, Category.Museum),
+                        categories = listOf(
+                            Category.Cafe,
+                            Category.Museum,
+                            Category.Park,
+                            Category.Monument,
+                            Category.Garden,
+                            Category.Gallery,
+                            Category.Plaza,
+                            Category.Aquarium,
+                            Category.Zoo,
+                            Category.Airport,
+                            Category.Arcade,
+                            Category.Gym,
+                            Category.Store,
+                            Category.Restaurant,
+                            Category.Cinema,
+                            Category.Wellness,
+                            Category.Other
+                        ),
                         fusedLocationClient = fusedLocationClient,
                         mapViewModel = mapViewModel,
                         citiesViewModel = citiesViewModel
